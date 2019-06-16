@@ -63,7 +63,8 @@ export default class TableTrick {
                     tr.appendChild(td);
                 });
             }
-        } else if (value === 'remove-col') {
+        } else if (value === 'delite-col') {
+            console.log("remove col")
             let td = TableTrick.find_td(quill);
             if (td) {
                 let table = td.parent.parent;
@@ -124,7 +125,8 @@ export default class TableTrick {
             }
             blot.insertBefore(table, top_branch);
             return table;
-        } else if (value === 'remove-row') {
+        } else if (value === 'delite-row') {
+            console.log("remove row")
             let td = TableTrick.find_td(quill);
             if (td) {
                 let tr = td.parent;
