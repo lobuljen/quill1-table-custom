@@ -12,16 +12,14 @@
 
 .ql-formats button.ql-table::after,
 .ql-formats .ql-picker.ql-table .ql-picker-label::before {
-    content: " ";
     display: block;
-    width: 18px;
-    height: 18px;
+    font-size: 14px;
     background-repeat: no-repeat;
     background-size: contain;
 }
 
 .ql-picker.ql-table .ql-picker-label::before {
-    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABcSURBVEhL3YsxDgBACML8/6fvNhd0aGCyCUuBOsULR5hGToStSHl8oB4fqMcH6rtIRZhGToStSHl8oB4fqMcH6rtIRZhGToStSHl8oB4fqMcH6rtIRZhGTk5Q9QFCcv8BMZAsCwAAAABJRU5ErkJggg==');
+    content: "Таблицы";
 }
 
 button.ql-table[value="append-row"]::before {
@@ -73,7 +71,7 @@ button.ql-table[value="remove-table"]::after {
 }
 
 .ql-picker.ql-table .ql-picker-options {
-    width: 178px;
+    width: 115px;
 }
 
 .ql-picker.ql-table .ql-picker-item {
@@ -94,6 +92,17 @@ button.ql-table[value="remove-table"]::after {
 
 .ql-picker.ql-table .ql-picker-item:hover {
     border-color: #06c;
+}
+
+.ql-picker-item[data-value="remove-table"] {
+    border: none!important;
+    width: 100%;
+}
+.ql-picker-item[data-value="remove-table"]:before {
+    content: "Удалить таблицу";
+    width: auto;
+    display: block;
+    font-size: 12px;    
 }
 
 .ql-picker-item[data-value=newtable_1_1]:before {
