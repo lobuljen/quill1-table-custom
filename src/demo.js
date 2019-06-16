@@ -34,7 +34,7 @@ const defaultToolbar = [
             ]
         },
         {
-            row_col: [
+            table: [
                 "append-row",
                 "append-col",
                 "remove-col",

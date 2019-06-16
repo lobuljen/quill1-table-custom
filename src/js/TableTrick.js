@@ -19,6 +19,7 @@ export default class TableTrick {
     }
 
     static table_handler(value, quill) {
+        console.log(value)
         if (value.includes('newtable_')) {
             let node = null;
             let sizes = value.split('_');
