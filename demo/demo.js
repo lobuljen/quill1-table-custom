@@ -13492,7 +13492,7 @@ for (var r = 1; r <= maxRows; r++) {
     }
 }
 
-var defaultToolbar = [[{ table: tableOptions }, { table: 'append-row' }, { table: 'append-col' }, { table: 'insert' }, { table: 'remove-col' }, { table: 'remove-row' }, { table: 'remove-table' }], ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block', 'image'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], [{ 'indent': '-1' }, { 'indent': '+1' }], [{ 'header': [1, 2, 3, 4, 5, 6, false] }], [{ 'color': [] }, { 'background': [] }], [{ 'font': [] }], [{ 'align': [] }], ['clean']];
+var defaultToolbar = [[{ table: ["newtable_1_2", "newtable_1_3", "newtable_1_4", "newtable_2_2", "newtable_2_3", "newtable_3_3"] }, { table: 'append-row' }, { table: 'append-col' }, { table: 'insert' }, { table: 'remove-col' }, { table: 'remove-row' }, { table: 'remove-table' }], ['bold', 'italic', 'underline', 'strike'], ['blockquote', 'code-block', 'image'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], [{ 'indent': '-1' }, { 'indent': '+1' }], [{ 'header': [1, 2, 3, 4, 5, 6, false] }], [{ 'color': [] }, { 'background': [] }], [{ 'font': [] }], [{ 'align': [] }], ['clean']];
 var Editor = new Quill(document.getElementById('quillContainer'), {
     modules: {
         toolbar: defaultToolbar,
