@@ -14,8 +14,6 @@
 .ql-picker.ql-table .ql-picker-label::before {
     display: block;
     font-size: 14px;
-    background-repeat: no-repeat;
-    background-size: contain;
 }
 
 .ql-picker.ql-table .ql-picker-label::before {
@@ -24,26 +22,21 @@
     line-height: 1em;
 }
 
-/* .ql-picker .ql-row_col[data-value="append-row"]::after {
-    border: 1px solid red;
-    content: "R+";
-}
-.ql-picker .ql-row_col[data-value="append-col"]::after {
-    content: "C+";
+.ql-picker-item[data-value="append-col"]::after {
+    content: "добавить столбец";
 }
 
-.ql-picker .ql-row_col[data-value="remove-col"]::after {
-    content: "C-"
+.ql-picker-item[data-value="remove-col"]::after {
+    content: "убрать столбец"
 }
 
-.ql-picker .ql-row_col[data-value="remove-row"]::after {
-    content: "R-"
+.ql-picker-item[data-value="append-row"]::after {
+    content: "добавить строку";
 }
 
-
-.ql-picker .ql-row_col[data-value="remove-table"]::after {
-    content: "T-"
-} */
+.ql-picker-item[data-value="remove-row"]::after {
+    content: "убрать строку"
+}
 
 .ql-table,
 .ql-contain {
@@ -75,18 +68,34 @@
     margin: 1px;
 }
 
-/* .ql-picker.ql-row_col {
+.ql-picker.ql-row_col {
     display: flex;
-    width: 80px;
-} */
+    width: 145px;
+}
+
+.ql-picker.ql-row_col .ql-picker-label::before {
+    content: "Строки/столбцы";
+}
+
+.ql-picker.ql-row_col {
+    color: #444;
+}
 
 .ql-picker.ql-table .ql-picker-item {
     border: 1px solid #444;
     color: #444;
 }
 
-.ql-picker.ql-table .ql-picker-item:hover {
-    border-color: #06c;
+.ql-row_col .ql-picker-label.ql-active {
+    color: #444!important;
+}
+
+.ql-toolbar .ql-picker-item.ql-selected:before, .ql-picker.ql-row_col .ql-picker-item {
+    color: #444;
+}
+
+.ql-picker-label.ql-active .ql-stroke {
+    stroke: #444!important;
 }
 
 .ql-picker-item[data-value="remove-table"] {
@@ -99,6 +108,7 @@
     display: block;
     font-size: 12px;    
 }
+
 
 .ql-picker-item[data-value=newtable_1_1]:before {
     content: "1x1";

@@ -33,14 +33,14 @@ const defaultToolbar = [
                 "remove-table"
             ]
         },
-        // {
-        //     row_col: [
-        //         "append-row",
-        //         "append-col",
-        //         "remove-col",
-        //         "remove-row"
-        //     ]
-        // }
+        {
+            row_col: [
+                "append-row",
+                "append-col",
+                "remove-col",
+                "remove-row"
+            ]
+        }
     ],
     ["bold", "italic", "underline", "strike"],
     ["blockquote", "code-block", "image"],
