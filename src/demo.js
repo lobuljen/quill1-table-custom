@@ -21,7 +21,7 @@ for (let r = 1; r <= maxRows; r++) {
 }
 
 const defaultToolbar = [
-    [{ table: tableOptions }, { table: 'append-row' }, { table: 'append-col' }, { table: 'insert' }, { table: 'remove-col' }, { table: 'remove-row' }],
+    [{ table: tableOptions }, { table: 'append-row' }, { table: 'append-col' }, { table: 'insert' }, { table: 'remove-col' }, { table: 'remove-row' }, { table: 'remove-table' }],
     ['bold', 'italic', 'underline', 'strike'],
     ['blockquote', 'code-block', 'image'],
 
