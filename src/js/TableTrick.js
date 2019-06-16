@@ -63,6 +63,33 @@ export default class TableTrick {
                     tr.appendChild(td);
                 });
             }
+        } else if (value === 'remove-col') {
+            let td = TableTrick.find_td(quill);
+            if (td) {
+                let table = td.parent.parent;
+                let cellId = td.domNode.getAttribute('cell_id');
+                let colIndex = 1;
+
+                // Count colIndex
+                td.parent.children.forEach(function loop(_td) {
+                    if (_td.domNode.getAttribute('cell_id') == cellId) {
+                        loop.stop = true;
+                        return;
+                    }
+                    // ~~ hack: Ecmascript doesn't support `break` :-/ ~~
+                    if (!loop.stop) {
+                        colIndex += 1;
+                    }
+                });
+
+                // Remove all TDs with the colIndex
+                table.children.forEach(function (tr) {
+                    var _td = tr.children.find(colIndex)[0];
+                    if (_td) {
+                        _td.remove();
+                    }
+                });
+            }
         } else if (value === 'append-row') {
             let td = TableTrick.find_td(quill);
             if (td) {
@@ -84,7 +111,7 @@ export default class TableTrick {
                 table.appendChild(new_row);
                 console.log(new_row);
             }
-        } else {
+        } else if (value === 'insert') {
             let table_id = TableTrick.random_id();
             let table = Parchment.create('table', table_id);
 
@@ -97,6 +124,12 @@ export default class TableTrick {
             }
             blot.insertBefore(table, top_branch);
             return table;
+        } else if (value === 'remove-row') {
+            let td = TableTrick.find_td(quill);
+            if (td) {
+                let tr = td.parent;
+                tr.remove();
+            }
         }
     }
 }

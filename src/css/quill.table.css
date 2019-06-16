@@ -35,6 +35,18 @@ button.ql-table[value="append-col"]::after {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADXSURBVEhL3ZVLCsJADIbnVi48gOJGUW8lqCuPo6g3UU8g7vX/GQMhnUdmUZR+8MGQyaOUlIbBMYMP+K7InCls5g5TDVPeYDNSXMOb1+FvBuzhKB7b8A5Ywwt8fT3DJaziGbCDkmflXRFJzMEn1w0FHVswkMMWWq5QNxN07MRADlto4fsu3fPuGY9pfj6A2yI5Ok/HjgzksIWWFdTNBB2bM5DDFqbYQt1Qu4FFJLEGV5HbIh8az8X1FLwDDnAcj214B3jzOvQ+oPcfDn+DLEw11DJnAgdPCB8kS4+90nxt3AAAAABJRU5ErkJggg==');
 }
 
+button.ql-table[value="insert"]::after {
+    content: "I"
+}
+
+button.ql-table[value="remove-col"]::after {
+    content: "C-"
+}
+
+button.ql-table[value="remove-row"]::after {
+    content: "R-"
+}
+
 .ql-table,
 .ql-contain {
     width: auto !important;
@@ -76,13 +88,6 @@ button.ql-table[value="append-col"]::after {
 
 .ql-picker.ql-table .ql-picker-item:hover {
     border-color: #06c;
-}
-
-.ql-picker-item:nth-child(5):before {
-    clear: both;
-    display: block;
-    content: "";
-    width: 100%;
 }
 
 .ql-picker-item[data-value=newtable_1_1]:before {
