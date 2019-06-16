@@ -1,6 +1,7 @@
 .ql-editor table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: fixed;
 }
 
 .ql-editor table td {
