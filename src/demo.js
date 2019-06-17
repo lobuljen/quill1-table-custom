@@ -51,24 +51,7 @@ const defaultToolbar = [
 
     ["clean"]
 ];
-// const KeyBoard = quill.getModule("keyboard");
-// console.log(quill.keyboard)
-// quill.keyboard.addBinding({ key: "Backspace" }, {}, function(range, context) {
-//     console.log("<---")
-// if (range.index === 0 || this.quill.getLength() <= 1) return true;
-// const [line] = this.quill.getLine(range.index);
-// if (context.offset === 0) {
-//     const [prev] = this.quill.getLine(range.index - 1);
-//     if (prev != null) {
-//         if (
-//             prev.statics.blotName === "table-cell-line" &&
-//             line.statics.blotName !== "table-cell-line"
-//         )
-//             return false;
-//     }
-// }
-//     return true;
-// });
+
 const quill = new Quill(document.getElementById("quillContainer"), {
     modules: {
         toolbar: defaultToolbar,
@@ -79,68 +62,48 @@ const quill = new Quill(document.getElementById("quillContainer"), {
                     key: "backspace",
                     handler: function(range, keycontext) {
                         let format = quill.getFormat(range.index - 1);
-                        const [line] = quill.getLine(range.index);
-                        const [next] = quill.getLine(
-                            range.index + range.length
-                        );
-                        console.log(line.domNode);
-                        if (range.length > 0) {
-                            if (keycontext.offset === 0) {
-                                console.log("delete all")
-                            }
-                            // alert(s)
-                            // console.log(s)
-                            // const selRange = selected.getRangeAt(0);
-                            // selRange.deleteContents()
-
-                            // console.log(keycontext.offset, "**")
-                            // if (keycontext.offset === 0) {
-                            //     line.domNode.parent.textContent = ""
-                            // }
-                            // let text = quill.getText(range.index, range.length);
-                            // console.log(range.index)
-                            // console.log(quill.getLeaf(range.index))
-                            // console.log(quill.getLeaf(range.index+1))
-                            // console.log(quill.getLeaf(range.index+2))
-                            // console.log(quill.getLeaf(range.index+3))
-                            // if (line.domNode.textContent.length > 0) {
-                            //     if (text !== line.domNode.textContent) return true
-                            //     line.domNode.textContent = ""
-                            // }
-                            // if (range.length === line.domNode.textContent.length) {
-                            //     return true
-                            // }
-                            // if (line.domNode.textContent.length > 0 && line.domNode.textContent !== text) return true
-                            // if (line.domNode.textContent.length > 0) {
-                            //     line.domNode.textContent = ""
-                            // }
-                            // // console.log(line.domNode.textContent.length)
-                            // return true
-                            // } else {
-
-                            // }
-                            // quill.setSelection(range.index, range.index);
-                            quill.setSelection(range.index, null);
-                            // quill.focus();
-                        }
-                        if (keycontext.offset > 0) {
-                            return true;
-                        }
+                        // если событие не в ячейки, то передать стандартному обработчику
                         if (!format.td && !keycontext.format.td) {
                             return true;
                         }
+                        // если выделение у границы ячейки
+                        if (range.length > 0) {
+                            const selection = window.getSelection();
+                            // снять выделение
+                            // quill.setSelection(range.index, null);
+                            const cells = document.getElementsByTagName("td");
+                            // удалить содержимое тех ячеек, которые выделены
+                            const resultCells = [...Array(cells.length).keys()]
+                                .map(i => cells.item(i))
+                                .filter(cell =>
+                                    selection.containsNode(cell, true)
+                                );
+                            // удаление не затрагивает ячейку
+                            if (resultCells.length === 1) return true
+                            resultCells.forEach(cell => {
+                                const result = selection.containsNode(
+                                    cell,
+                                    true
+                                );
+                                if (result) {
+                                    while (cell.firstChild) {
+                                        cell.removeChild(cell.firstChild);
+                                    }
+                                }
+                            });
+                            // убрать выделение
+                            window.getSelection().collapse(resultCells[0], 0);
+                            return false;
+                        }
+                        // если удаляем не у границы ячейки, то передать стандартному обработчику
+                        if (keycontext.offset > 0) {
+                            return true;
+                        }
                         const [prev] = quill.getLine(range.index - 1);
-                        // console.log(line.statics, prev)
+                        // если в ячейки несколько строк, то можно удалять стандартно
                         if (prev && prev.next) {
                             return true;
                         }
-                        // if (prev != null) {
-                        //     if (
-                        //         prev.statics.blotName === "td" &&
-                        //         line.statics.blotName !== "td"
-                        //     )
-                        //     return false;
-                        // }
                     }
                 }
             }
