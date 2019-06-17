@@ -13594,8 +13594,68 @@ var quill = new Quill(document.getElementById("quillContainer"), {
         table: true,
         keyboard: {
             bindings: {
-                td: {
+                backspace: {
                     key: "backspace",
+                    handler: function handler(range, keycontext) {
+                        var format = quill.getFormat(range.index - 1);
+                        // если событие не в ячейки, то передать стандартному обработчику
+                        if (!format.td && !keycontext.format.td) {
+                            return true;
+                        }
+                        // если выделение у границы ячейки
+                        if (range.length > 0) {
+                            var selection = window.getSelection();
+                            var alltext = selection.toString();
+                            var cells = document.getElementsByTagName("td");
+                            // удалить содержимое тех ячеек, которые выделены
+                            var resultCells = [].concat((0, _toConsumableArray3.default)(Array(cells.length).keys())).map(function (i) {
+                                return cells.item(i);
+                            }).filter(function (cell) {
+                                return selection.containsNode(cell, true);
+                            });
+                            // удаление не затрагивает ячейку
+                            if (resultCells.length <= 1) return true;
+                            resultCells.forEach(function (cell, i) {
+                                var text = cell.textContent;
+                                while (cell.firstChild) {
+                                    cell.removeChild(cell.firstChild);
+                                }
+                                if (i === 0 && keycontext.offset > 0) {
+                                    var newtext = document.createTextNode(text.substr(0, keycontext.offset));
+                                    cell.appendChild(newtext);
+                                }
+                                if (i === resultCells.length - 1) {
+                                    var arr = alltext.split("\n");
+                                    var _newtext = document.createTextNode(text.substr(arr[arr.length - 1].length));
+                                    cell.appendChild(_newtext);
+                                }
+                            });
+                            // убрать выделение
+                            if (resultCells[0].firstChild) {
+                                window.getSelection().collapse(resultCells[0].firstChild, keycontext.offset);
+                            } else {
+                                window.getSelection().collapse(resultCells[0], 0);
+                            }
+                            return false;
+                        }
+                        // если удаляем не у границы ячейки, то передать стандартному обработчику
+                        if (keycontext.offset > 0) {
+                            return true;
+                        }
+
+                        var _quill$getLine = quill.getLine(range.index - 1),
+                            _quill$getLine2 = (0, _slicedToArray3.default)(_quill$getLine, 1),
+                            prev = _quill$getLine2[0];
+                        // если в ячейки несколько строк, то можно удалять стандартно
+
+
+                        if (prev && prev.next) {
+                            return true;
+                        }
+                    }
+                },
+                delete: {
+                    key: "delete",
                     handler: function handler(range, keycontext) {
                         var format = quill.getFormat(range.index - 1);
                         // если событие не в ячейки, то передать стандартному обработчику
@@ -13615,7 +13675,7 @@ var quill = new Quill(document.getElementById("quillContainer"), {
                                 return selection.containsNode(cell, true);
                             });
                             // удаление не затрагивает ячейку
-                            if (resultCells.length === 1) return true;
+                            if (resultCells.length <= 1) return true;
                             resultCells.forEach(function (cell) {
                                 var result = selection.containsNode(cell, true);
                                 if (result) {
@@ -13633,9 +13693,9 @@ var quill = new Quill(document.getElementById("quillContainer"), {
                             return true;
                         }
 
-                        var _quill$getLine = quill.getLine(range.index - 1),
-                            _quill$getLine2 = (0, _slicedToArray3.default)(_quill$getLine, 1),
-                            prev = _quill$getLine2[0];
+                        var _quill$getLine3 = quill.getLine(range.index - 1),
+                            _quill$getLine4 = (0, _slicedToArray3.default)(_quill$getLine3, 1),
+                            prev = _quill$getLine4[0];
                         // если в ячейки несколько строк, то можно удалять стандартно
 
 
