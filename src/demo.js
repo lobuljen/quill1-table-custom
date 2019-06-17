@@ -52,6 +52,59 @@ const defaultToolbar = [
     ["clean"]
 ];
 
+function tableController(range, keycontext) {
+    let format = quill.getFormat(range.index - 1);
+    // если событие не в ячейки, то передать стандартному обработчику
+    if (!format.td && !keycontext.format.td) {
+        return true;
+    }
+    // если выделение у границы ячейки
+    if (range.length > 0) {
+        const selection = window.getSelection();
+        const alltext = selection.toString()
+        const cells = document.getElementsByTagName("td");
+        // удалить содержимое тех ячеек, которые выделены
+        const resultCells = [...Array(cells.length).keys()]
+            .map(i => cells.item(i))
+            .filter(cell =>
+                selection.containsNode(cell, true)
+            );
+        // удаление не затрагивает ячейку
+        if (resultCells.length <= 1) return true
+        resultCells.forEach((cell, i) => {
+            const text = cell.textContent;
+            while (cell.firstChild) {
+                cell.removeChild(cell.firstChild);
+            }
+            if (i === 0 && keycontext.offset > 0) {
+                let newtext = document.createTextNode(text.substr(0, keycontext.offset))
+                cell.appendChild(newtext)
+            }
+            if (i === resultCells.length - 1) {
+                const arr = alltext.split("\n")
+                let newtext = document.createTextNode(text.substr(arr[arr.length - 1].length))
+                cell.appendChild(newtext)
+            }
+        });
+        // убрать выделение
+        if (resultCells[0].firstChild) {
+            window.getSelection().collapse(resultCells[0].firstChild, keycontext.offset);
+        } else {
+            window.getSelection().collapse(resultCells[0], 0);
+        }
+        return false;
+    }
+    // если удаляем не у границы ячейки, то передать стандартному обработчику
+    if (keycontext.offset > 0) {
+        return true;
+    }
+    const [prev] = quill.getLine(range.index - 1);
+    // если в ячейки несколько строк, то можно удалять стандартно
+    if (prev && prev.next) {
+        return true;
+    }
+}
+
 const quill = new Quill(document.getElementById("quillContainer"), {
     modules: {
         toolbar: defaultToolbar,
@@ -60,107 +113,12 @@ const quill = new Quill(document.getElementById("quillContainer"), {
             bindings: {
                 backspace: {
                     key: "backspace",
-                    handler: function(range, keycontext) {
-                        let format = quill.getFormat(range.index - 1);
-                        // если событие не в ячейки, то передать стандартному обработчику
-                        if (!format.td && !keycontext.format.td) {
-                            return true;
-                        }
-                        // если выделение у границы ячейки
-                        if (range.length > 0) {
-                            const selection = window.getSelection();
-                            const alltext = selection.toString()
-                            const cells = document.getElementsByTagName("td");
-                            // удалить содержимое тех ячеек, которые выделены
-                            const resultCells = [...Array(cells.length).keys()]
-                                .map(i => cells.item(i))
-                                .filter(cell =>
-                                    selection.containsNode(cell, true)
-                                );
-                            // удаление не затрагивает ячейку
-                            if (resultCells.length <= 1) return true
-                            resultCells.forEach((cell, i) => {  
-                                const text = cell.textContent;
-                                while (cell.firstChild) {
-                                    cell.removeChild(cell.firstChild);
-                                }
-                                if (i === 0 && keycontext.offset > 0) {
-                                    let newtext = document.createTextNode(text.substr(0, keycontext.offset))
-                                    cell.appendChild(newtext)
-                                }
-                                if (i === resultCells.length-1) {
-                                    const arr = alltext.split("\n")
-                                    let newtext = document.createTextNode(text.substr(arr[arr.length-1].length))
-                                    cell.appendChild(newtext)
-                                }
-                            });
-                            // убрать выделение
-                            if (resultCells[0].firstChild) {
-                                window.getSelection().collapse(resultCells[0].firstChild, keycontext.offset);
-                            } else {
-                                window.getSelection().collapse(resultCells[0], 0);
-                            }
-                            return false;
-                        }
-                        // если удаляем не у границы ячейки, то передать стандартному обработчику
-                        if (keycontext.offset > 0) {
-                            return true;
-                        }
-                        const [prev] = quill.getLine(range.index - 1);
-                        // если в ячейки несколько строк, то можно удалять стандартно
-                        if (prev && prev.next) {
-                            return true;
-                        }
-                    }
+                    handler: (range, keycontext) => tableController(range, keycontext)
                 },
                 delete: {
                     key: "delete",
-                    handler: function (range, keycontext) {
-                        let format = quill.getFormat(range.index - 1);
-                        // если событие не в ячейки, то передать стандартному обработчику
-                        if (!format.td && !keycontext.format.td) {
-                            return true;
-                        }
-                        // если выделение у границы ячейки
-                        if (range.length > 0) {
-                            const selection = window.getSelection();
-                            // снять выделение
-                            // quill.setSelection(range.index, null);
-                            const cells = document.getElementsByTagName("td");
-                            // удалить содержимое тех ячеек, которые выделены
-                            const resultCells = [...Array(cells.length).keys()]
-                                .map(i => cells.item(i))
-                                .filter(cell =>
-                                    selection.containsNode(cell, true)
-                                );
-                            // удаление не затрагивает ячейку
-                            if (resultCells.length <= 1) return true
-                            resultCells.forEach(cell => {
-                                const result = selection.containsNode(
-                                    cell,
-                                    true
-                                );
-                                if (result) {
-                                    while (cell.firstChild) {
-                                        cell.removeChild(cell.firstChild);
-                                    }
-                                }
-                            });
-                            // убрать выделение
-                            window.getSelection().collapse(resultCells[0], 0);
-                            return false;
-                        }
-                        // если удаляем не у границы ячейки, то передать стандартному обработчику
-                        if (keycontext.offset > 0) {
-                            return true;
-                        }
-                        const [prev] = quill.getLine(range.index - 1);
-                        // если в ячейки несколько строк, то можно удалять стандартно
-                        if (prev && prev.next) {
-                            return true;
-                        }
-                    }
-                }
+                    handler: (range, keycontext) => tableController(range, keycontext)
+                },
             }
         }
     },
