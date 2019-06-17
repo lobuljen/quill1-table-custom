@@ -38,6 +38,7 @@ class TableCell extends ContainBlot {
         let parent = this.parent;
         if (parent != null) {
             if (parent.statics.blotName === 'td') {
+                console.log("remove")
                 this.moveChildren(parent, this);
                 this.remove();
                 return;
@@ -94,8 +95,8 @@ class TableCell extends ContainBlot {
 
 TableCell.blotName = 'td';
 TableCell.tagName = 'td';
+TableCell.className = 'td-q';
 TableCell.scope = Parchment.Scope.BLOCK_BLOT;
-TableCell.defaultChild = 'block';
 TableCell.allowedChildren = [Block, BlockEmbed, Container];
 
 export default TableCell;

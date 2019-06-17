@@ -6,8 +6,12 @@
 
 .ql-editor table td {
     border: 1px solid black;
-    padding: 5px;
+    padding: 2px 5px;
     height: 25px;
+}
+
+.quill-better-table-wrapper {
+  overflow-x: auto;
 }
 
 /* .ql-formats button.ql-table::after, */
