@@ -88,26 +88,30 @@ const keyboardHandler = (key, range, keycontext) => {
         if (resultNodes.length <= 1) return true;
         const range = selection.getRangeAt(0);
         let offset = 0;
-        resultNodes.forEach((cell, i) => {
+        resultNodes.forEach((node, i) => {
             let tempRange = document.createRange();
-            tempRange.selectNodeContents(cell);
+            tempRange.selectNodeContents(node);
             tempRange.setEnd(range.startContainer, range.startOffset);
             let before = tempRange.toString();
-            tempRange.selectNodeContents(cell);
+            tempRange.selectNodeContents(node);
             tempRange.setStart(range.endContainer, range.endOffset);
             let after = tempRange.toString();
-            removeNodeChildren(cell);
+            removeNodeChildren(node);
             if (i === 0 && keycontext.offset > 0) {
                 if (before.length > 0) {
                     offset = before.length;
                     let newtext = document.createTextNode(before);
-                    cell.appendChild(newtext);
+                    node.appendChild(newtext);
+                } else {
+                    node.remove();
                 }
             }
             if (i === resultNodes.length - 1) {
                 if (after.length > 0) {
                     let newtext = document.createTextNode(after);
-                    cell.appendChild(newtext);
+                    node.appendChild(newtext);
+                } else {
+                    node.remove();
                 }
             }
         });
@@ -128,7 +132,7 @@ const keyboardHandler = (key, range, keycontext) => {
     let blot = Parchment.find(node);
 
     if (
-        key === "delete" &&
+        key === "delete" && blot &&
         keycontext.offset < (blot.text ? blot.text.length : 0)
     ) {
         return true;

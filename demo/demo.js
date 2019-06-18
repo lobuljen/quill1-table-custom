@@ -13636,26 +13636,30 @@ var keyboardHandler = function keyboardHandler(key, range, keycontext) {
         if (resultNodes.length <= 1) return true;
         var _range = selection.getRangeAt(0);
         var offset = 0;
-        resultNodes.forEach(function (cell, i) {
+        resultNodes.forEach(function (node, i) {
             var tempRange = document.createRange();
-            tempRange.selectNodeContents(cell);
+            tempRange.selectNodeContents(node);
             tempRange.setEnd(_range.startContainer, _range.startOffset);
             var before = tempRange.toString();
-            tempRange.selectNodeContents(cell);
+            tempRange.selectNodeContents(node);
             tempRange.setStart(_range.endContainer, _range.endOffset);
             var after = tempRange.toString();
-            removeNodeChildren(cell);
+            removeNodeChildren(node);
             if (i === 0 && keycontext.offset > 0) {
                 if (before.length > 0) {
                     offset = before.length;
                     var newtext = document.createTextNode(before);
-                    cell.appendChild(newtext);
+                    node.appendChild(newtext);
+                } else {
+                    node.remove();
                 }
             }
             if (i === resultNodes.length - 1) {
                 if (after.length > 0) {
                     var _newtext = document.createTextNode(after);
-                    cell.appendChild(_newtext);
+                    node.appendChild(_newtext);
+                } else {
+                    node.remove();
                 }
             }
         });
@@ -13675,7 +13679,7 @@ var keyboardHandler = function keyboardHandler(key, range, keycontext) {
     if (!node) return false;
     var blot = Parchment.find(node);
 
-    if (key === "delete" && keycontext.offset < (blot.text ? blot.text.length : 0)) {
+    if (key === "delete" && blot && keycontext.offset < (blot.text ? blot.text.length : 0)) {
         return true;
     }
 
