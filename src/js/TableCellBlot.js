@@ -38,7 +38,6 @@ class TableCell extends ContainBlot {
         let parent = this.parent;
         if (parent != null) {
             if (parent.statics.blotName === 'td') {
-                console.log("remove")
                 this.moveChildren(parent, this);
                 this.remove();
                 return;

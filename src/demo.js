@@ -105,14 +105,15 @@ const keyboardHandler = (key, range, keycontext) => {
                 } else {
                     node.remove();
                 }
-            }
-            if (i === resultNodes.length - 1) {
+            } else if (i === resultNodes.length - 1) {
                 if (after.length > 0) {
                     let newtext = document.createTextNode(after);
                     node.appendChild(newtext);
                 } else {
                     node.remove();
                 }
+            } else {
+                node.remove();
             }
         });
         // убрать выделение

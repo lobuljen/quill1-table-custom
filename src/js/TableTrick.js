@@ -19,7 +19,6 @@ export default class TableTrick {
     }
 
     static table_handler(value, quill) {
-        console.log(value)
         if (value.includes('newtable_')) {
             let node = null;
             let sizes = value.split('_');
@@ -110,7 +109,6 @@ export default class TableTrick {
                     p.appendChild(br);
                 }
                 table.appendChild(new_row);
-                console.log(new_row);
             }
         } else if (value === 'insert') {
             let table_id = TableTrick.random_id();
