@@ -52,6 +52,8 @@ const defaultToolbar = [
     ["clean"]
 ];
 
+const Parchment = Quill.import('parchment');
+
 const nodeListToArray = collection => {
     const elementsIndex = [];
     for (let i = 0; i < collection.length; i++) {
@@ -77,50 +79,43 @@ const keyboardHandler = (key, range, keycontext) => {
     // если выделение у границы ячейки
     if (range.length > 0) {
         const selection = window.getSelection();
-        const alltext = selection.toString();
-        const cells = document.querySelectorAll(".ql-editor td");
-        // удалить содержимое тех ячеек, которые выделены
-        const resultCells = nodeListToArray(cells).filter(cell =>
+        const nodeList = document.querySelectorAll(".ql-editor p");
+        // удалить выделенное содержимое
+        const resultNodes = nodeListToArray(nodeList).filter(cell =>
             selection.containsNode(cell, true)
         );
         // удаление не затрагивает ячейку
-        if (resultCells.length <= 1) return true;
-        if (!format_end.td) {
-            const divs = document.querySelectorAll(".ql-editor div");
-            const resultDivs = nodeListToArray(divs).filter(div =>
-                selection.containsNode(div, true)
-            );
-            resultDivs.forEach((div, i) => {
-                const text = div.textContent;
-                console.log(text, "*");
-                removeNodeChildren(div);
-            });
-        }
-        resultCells.forEach((cell, i) => {
-            const text = cell.textContent;
+        if (resultNodes.length <= 1) return true;
+        const range = selection.getRangeAt(0);
+        let offset = 0;
+        resultNodes.forEach((cell, i) => {
+            let tempRange = document.createRange();
+            tempRange.selectNodeContents(cell);
+            tempRange.setEnd(range.startContainer, range.startOffset);
+            let before = tempRange.toString();
+            tempRange.selectNodeContents(cell);
+            tempRange.setStart(range.endContainer, range.endOffset);
+            let after = tempRange.toString();
             removeNodeChildren(cell);
             if (i === 0 && keycontext.offset > 0) {
-                // debugger;
-                let newtext = document.createTextNode(
-                    text.substr(0, keycontext.offset)
-                );
-                cell.appendChild(newtext);
+                if (before.length > 0) {
+                    offset = before.length;
+                    let newtext = document.createTextNode(before);
+                    cell.appendChild(newtext);
+                }
             }
-            if (i === resultCells.length - 1) {
-                const arr = alltext.split("\n");
-                let newtext = document.createTextNode(
-                    text.substr(arr[arr.length - 1].length)
-                );
-                cell.appendChild(newtext);
+            if (i === resultNodes.length - 1) {
+                if (after.length > 0) {
+                    let newtext = document.createTextNode(after);
+                    cell.appendChild(newtext);
+                }
             }
         });
         // убрать выделение
-        if (resultCells[0].firstChild) {
-            window
-                .getSelection()
-                .collapse(resultCells[0].firstChild, keycontext.offset);
+        if (resultNodes[0].firstChild) {
+            window.getSelection().collapse(resultNodes[0].firstChild, offset);
         } else {
-            window.getSelection().collapse(resultCells[0], 0);
+            window.getSelection().collapse(resultNodes[0], 0);
         }
         return false;
     }
@@ -129,6 +124,7 @@ const keyboardHandler = (key, range, keycontext) => {
         return true;
     }
     let node = quill.selection.getNativeRange().start.node;
+    if (!node) return false
     let blot = Parchment.find(node);
 
     if (
@@ -170,4 +166,4 @@ const quill = new Quill(document.getElementById("quillContainer"), {
     theme: "snow"
 });
 
-window.quill = quill
+window.quill = quill;

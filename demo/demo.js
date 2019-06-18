@@ -13598,6 +13598,8 @@ var defaultToolbar = [[{
     table: ["append-row", "append-col", "remove-col", "remove-row"]
 }], ["bold", "italic", "underline", "strike"], ["blockquote", "code-block", "image"], [{ list: "ordered" }, { list: "bullet" }], [{ indent: "-1" }, { indent: "+1" }], [{ header: [1, 2, 3, 4, 5, 6, false] }], [{ color: [] }, { background: [] }], [{ font: [] }], [{ align: [] }], ["clean"]];
 
+var Parchment = Quill.import('parchment');
+
 var nodeListToArray = function nodeListToArray(collection) {
     var elementsIndex = [];
     for (var i = 0; i < collection.length; i++) {
@@ -13625,44 +13627,43 @@ var keyboardHandler = function keyboardHandler(key, range, keycontext) {
     // если выделение у границы ячейки
     if (range.length > 0) {
         var selection = window.getSelection();
-        var alltext = selection.toString();
-        var cells = document.querySelectorAll(".ql-editor td");
-        // удалить содержимое тех ячеек, которые выделены
-        var resultCells = nodeListToArray(cells).filter(function (cell) {
+        var nodeList = document.querySelectorAll(".ql-editor p");
+        // удалить выделенное содержимое
+        var resultNodes = nodeListToArray(nodeList).filter(function (cell) {
             return selection.containsNode(cell, true);
         });
         // удаление не затрагивает ячейку
-        if (resultCells.length <= 1) return true;
-        if (!format_end.td) {
-            var divs = document.querySelectorAll(".ql-editor div");
-            var resultDivs = nodeListToArray(divs).filter(function (div) {
-                return selection.containsNode(div, true);
-            });
-            resultDivs.forEach(function (div, i) {
-                var text = div.textContent;
-                console.log(text, "*");
-                removeNodeChildren(div);
-            });
-        }
-        resultCells.forEach(function (cell, i) {
-            var text = cell.textContent;
+        if (resultNodes.length <= 1) return true;
+        var _range = selection.getRangeAt(0);
+        var offset = 0;
+        resultNodes.forEach(function (cell, i) {
+            var tempRange = document.createRange();
+            tempRange.selectNodeContents(cell);
+            tempRange.setEnd(_range.startContainer, _range.startOffset);
+            var before = tempRange.toString();
+            tempRange.selectNodeContents(cell);
+            tempRange.setStart(_range.endContainer, _range.endOffset);
+            var after = tempRange.toString();
             removeNodeChildren(cell);
             if (i === 0 && keycontext.offset > 0) {
-                // debugger;
-                var newtext = document.createTextNode(text.substr(0, keycontext.offset));
-                cell.appendChild(newtext);
+                if (before.length > 0) {
+                    offset = before.length;
+                    var newtext = document.createTextNode(before);
+                    cell.appendChild(newtext);
+                }
             }
-            if (i === resultCells.length - 1) {
-                var arr = alltext.split("\n");
-                var _newtext = document.createTextNode(text.substr(arr[arr.length - 1].length));
-                cell.appendChild(_newtext);
+            if (i === resultNodes.length - 1) {
+                if (after.length > 0) {
+                    var _newtext = document.createTextNode(after);
+                    cell.appendChild(_newtext);
+                }
             }
         });
         // убрать выделение
-        if (resultCells[0].firstChild) {
-            window.getSelection().collapse(resultCells[0].firstChild, keycontext.offset);
+        if (resultNodes[0].firstChild) {
+            window.getSelection().collapse(resultNodes[0].firstChild, offset);
         } else {
-            window.getSelection().collapse(resultCells[0], 0);
+            window.getSelection().collapse(resultNodes[0], 0);
         }
         return false;
     }
@@ -13671,6 +13672,7 @@ var keyboardHandler = function keyboardHandler(key, range, keycontext) {
         return true;
     }
     var node = quill.selection.getNativeRange().start.node;
+    if (!node) return false;
     var blot = Parchment.find(node);
 
     if (key === "delete" && keycontext.offset < (blot.text ? blot.text.length : 0)) {
