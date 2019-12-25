@@ -17,14 +17,26 @@
   overflow-x: auto;
 }
 
+.ql-picker.ql-table {
+    width: auto !important;
+    margin-right: 0;
+}
+
+.ql-picker.ql-table .ql-picker-label svg{
+    display: none;
+}
 /* .ql-formats button.ql-table::after, */
-.ql-picker.ql-table:nth-of-type(1) .ql-picker-label::before {
+.ql-picker.ql-table .ql-picker-label::before {
     display: block;
     font-size: 14px;
 }
 
 .ql-picker.ql-table:nth-of-type(1) .ql-picker-label::before {
-    content: "Таблицы";
+    content: "\f0ce";
+}
+.ql-picker.ql-table .ql-picker-label::before {
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
     padding-top: 2px;
     line-height: 1em;
 }
@@ -56,8 +68,9 @@
     font-weight: normal;
 }
 
-.ql-picker.ql-table:nth-of-type(1) .ql-picker-label {
+.ql-picker.ql-table .ql-picker-label {
     padding: 2px 3px;
+    width: 23px;
 }
 
 .ql-picker.ql-table:nth-of-type(1) .ql-picker-options {
@@ -81,7 +94,7 @@
 }
 
 .ql-picker.ql-table:nth-of-type(2) .ql-picker-label::before {
-    content: "Строки/столбцы";
+    content: "\f850";
 }
 
 .ql-picker.ql-table:nth-of-type(2) {

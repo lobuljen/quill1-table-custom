@@ -4,6 +4,12 @@ import "quill/dist/quill.core.css";
 import "quill/dist/quill.snow.css";
 import "./css/quill.table.css";
 
+// import '@fortawesome/fontawesome-free/webfonts';
+// import '@fortawesome/fontawesome-free/css/solid.css';
+// import "./css/fa.scss";
+
+
+
 Quill.register("modules/table", TableModule);
 
 const defaultToolbar = [
