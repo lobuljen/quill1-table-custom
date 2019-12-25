@@ -11,6 +11,7 @@
     padding: 2px 5px;
     height: 25px;
     vertical-align: top;
+    white-space: normal;
 }
 
 .quill-better-table-wrapper {
