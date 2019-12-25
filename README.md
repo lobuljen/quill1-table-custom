@@ -4,6 +4,15 @@ Test lab for creating `TABLE` functionality in QuillJS using Containers.
 
 Code of quill is included in project so we can easily play with it in our tests.
 
+## What the previous developers fixed
+
+* Denied Backspase inside an empty cell
+* Added ability to delete a table
+
+## What would be nice to add/fix
+* the ability to insert tables. Inserts even from Word 
+* ctrl+z is still breaking table
+
 ## Usage
 ```javascript
 const quillTable = require('quill-table');
