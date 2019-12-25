@@ -6,7 +6,7 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 ## What the previous developers fixed
 
-* Denied Backspase inside an empty cell
+* Denied Backspace inside an empty cell
 * Added ability to delete a table
 
 ## What would be nice to add/fix
@@ -14,23 +14,61 @@ Code of quill is included in project so we can easily play with it in our tests.
 * ctrl+z is still breaking table
 
 ## Usage
-```javascript
-const quillTable = require('quill-table');
 
-Quill.register(quillTable.TableCell);
-Quill.register(quillTable.TableRow);
-Quill.register(quillTable.Table);
-Quill.register(quillTable.Contain);
-Quill.register('modules/table', quillTable.TableModule);
+see example [demo.js](../blob/master/src/demo.js)
+
 ```
-## Progress so far
+// import module
+import TableModule from "quill-table-tbf"
+
+// register module
+Quill.register("modules/table", TableModule);
+
+// add toolbar controls in Toolbar module options
+[
+        {
+            table: TableModule.tableOptions()
+        },
+        {
+            table: ["append-row", "append-col", "remove-col", "remove-row"]
+        }
+]
+
+// add keboard bindings in Keyboard options
+
+keyboard: {
+            bindings: {
+                backspace: {
+                    key: "backspace",
+                    handler: (range, keycontext) =>
+                        TableModule.keyboardHandler("backspace", range, keycontext)
+                },
+                delete: {
+                    key: "delete",
+                    handler: (range, keycontext) =>
+                        TableModule.keyboardHandler("delete", range, keycontext)
+                }
+            }
+        }
+```
+
+### For development
+```shell script
+yarn install
+
+yarn build
+```
+
+## Check is it actual or not:
+
+### Progress so far
 * `TABLE`, `TR` and `TD` are containers - it is possible to have multiple block blots in `TD`.
 * all tables, rows and cells are identified by random strings and optimize merge only those with the same id.
 * It is possible to add tables by defining rows and cols count in grid.
 * It is possible to add rows and columns to existing tables (accessible by buttons in toolbar).
 * it is possible to copy & paste table from Word. Works ok. Needs to test edge cases.
 
-## Known issues
+### Known issues
 It is early stage so there is a lot of issues with current state.
 Still there are some worth to mention which should be dealt with.
 

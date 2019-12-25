@@ -5,8 +5,8 @@ const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
 module.exports = {
     entry: './src/index.js',
     output: {
-        filename: 'quill-table.js',
-        library: 'quillTable',
+        filename: 'quill-table-tbf.js',
+        library: 'quillTableTbf',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'dist')
     },

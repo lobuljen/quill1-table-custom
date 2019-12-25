@@ -61,7 +61,7 @@
 }
 
 .ql-picker.ql-table:nth-of-type(1) .ql-picker-options {
-    width: 115px;
+    width: 180px;
 }
 
 .ql-picker.ql-table:nth-of-type(1) .ql-picker-item {
@@ -113,7 +113,7 @@
     content: "Удалить таблицу";
     width: auto;
     display: block;
-    font-size: 12px;    
+    font-size: 12px;
 }
 
 .ql-picker-item[data-value=newtable_1_1]:before {
@@ -132,6 +132,14 @@
     content: "1x4";
 }
 
+.ql-picker-item[data-value=newtable_1_5]:before {
+    content: "1x5";
+}
+
+.ql-picker-item[data-value=newtable_2_1]:before {
+    content: "2x1";
+}
+
 .ql-picker-item[data-value=newtable_2_2]:before {
     content: "2x2";
 }
@@ -140,6 +148,70 @@
     content: "2x3";
 }
 
+.ql-picker-item[data-value=newtable_2_4]:before {
+    content: "2x4";
+}
+
+.ql-picker-item[data-value=newtable_2_5]:before {
+    content: "2x5";
+}
+
+.ql-picker-item[data-value=newtable_3_1]:before {
+    content: "3x1";
+}
+
+.ql-picker-item[data-value=newtable_3_2]:before {
+    content: "3x2";
+}
+
 .ql-picker-item[data-value=newtable_3_3]:before {
     content: "3x3";
+}
+
+.ql-picker-item[data-value=newtable_3_4]:before {
+    content: "3x4";
+}
+
+.ql-picker-item[data-value=newtable_3_5]:before {
+    content: "3x5";
+}
+
+.ql-picker-item[data-value=newtable_4_1]:before {
+    content: "4x1";
+}
+
+.ql-picker-item[data-value=newtable_4_2]:before {
+    content: "4x2";
+}
+
+.ql-picker-item[data-value=newtable_4_3]:before {
+    content: "4x3";
+}
+
+.ql-picker-item[data-value=newtable_4_4]:before {
+    content: "4x4";
+}
+
+.ql-picker-item[data-value=newtable_4_5]:before {
+    content: "4x5";
+}
+
+.ql-picker-item[data-value=newtable_5_1]:before {
+    content: "5x1";
+}
+
+.ql-picker-item[data-value=newtable_5_2]:before {
+    content: "5x2";
+}
+
+.ql-picker-item[data-value=newtable_5_3]:before {
+    content: "5x3";
+}
+
+.ql-picker-item[data-value=newtable_5_4]:before {
+    content: "5x4";
+}
+
+.ql-picker-item[data-value=newtable_5_5]:before {
+    content: "5x5";
 }
