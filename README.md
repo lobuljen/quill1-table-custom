@@ -15,7 +15,7 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 ## Usage
 
-see example [demo.js](../blob/master/src/demo.js)
+see example [demo.js](../master/src/demo.js)
 
 ```
 // import module
