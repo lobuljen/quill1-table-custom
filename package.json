@@ -1,6 +1,6 @@
 {
   "name": "quill-table-tbf",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Table functionality for quilljs. Choice from all forks of original https://github.com/dost/quilljs-table",
   "main": "dist/quill-table-tbf.js",
   "scripts": {

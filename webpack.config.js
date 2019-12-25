@@ -56,7 +56,7 @@ module.exports = {
             }
         }),
         new webpack.SourceMapDevToolPlugin({
-            filename: 'quill-table.js.map',
+            filename: 'quill-table-tbf.js.map',
         }),
     ]
 };
