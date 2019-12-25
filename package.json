@@ -1,7 +1,7 @@
 {
-  "name": "quill-table",
-  "version": "1.0.0",
-  "description": "Table functionality in QuillJS using Containers.",
+  "name": "quill-table-tbf",
+  "version": "1.0.1",
+  "description": "Table functionality for quilljs. Choice from all forks of original https://github.com/dost/quilljs-table",
   "main": "dist/quill-table.js",
   "scripts": {
     "build": "webpack && webpack --config=demo.config.js",
@@ -10,18 +10,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MrMadClown/quilljs-table.git"
+    "url": "https://github.com/acatec/quill-table-tbf.git"
   },
   "keywords": [
     "Quill",
     "Table"
   ],
-  "author": "MrMadClown",
+  "author": "Acatec",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MrMadClown/quilljs-table/issues"
+    "url": "https://github.com/acatec/quill-table-tbf/issues"
   },
-  "homepage": "https://github.com/MrMadClown/quilljs-table#readme",
+  "homepage": "https://github.com/acatec/quill-table-tbf#readme",
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-loader": "^7.1.2",
