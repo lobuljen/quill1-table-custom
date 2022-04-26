@@ -52,19 +52,6 @@ export default class TableModule {
                 td: node.getAttribute('table_id') + '|' + node.getAttribute('row_id') + '|' + node.getAttribute('cell_id')
             }));
         });
-
-        // quill.keyboard.addBinding({
-        //     key: 8
-        // }, (range, keycontext) => {
-        //     alert(213);
-        //     this.keyboardHandler(8, range, keycontext)
-        // });
-        //
-        // quill.keyboard.addBinding({
-        //     key: "delete"
-        // }, (range, keycontext) => {
-        //     this.keyboardHandler("delete", range, keycontext)
-        // });
     }
 
     static tableOptions() {
@@ -89,62 +76,52 @@ export default class TableModule {
         const quill = window.quill;
         let format_start = quill.getFormat(range.index - 1);
         let format_end = quill.getFormat(range.index + range.length);
-        // если событие не в ячейки, то передать стандартному обработчику
+
+        if (key === "undo" || key === "redo") {
+          return TableTrick.table_handler(key, quill);
+        }
+
+        // If the event is not in a cell, then pass the standard handler
         if (!format_start.td && !keycontext.format.td && !format_end.td) {
             return true;
         }
-        // если выделение у границы ячейки
-        if (range.length > 0) {
-            const selection = window.getSelection();
-            const nodeList = document.querySelectorAll(".ql-editor p");
-            // удалить выделенное содержимое
-            const resultNodes = nodeListToArray(nodeList).filter(cell =>
-                selection.containsNode(cell, true)
-            );
-            // удаление не затрагивает ячейку
-            if (resultNodes.length <= 1) return true;
-            const range = selection.getRangeAt(0);
-            let offset = 0;
-            resultNodes.forEach((node, i) => {
-                let tempRange = document.createRange();
-                tempRange.selectNodeContents(node);
-                tempRange.setEnd(range.startContainer, range.startOffset);
-                let before = tempRange.toString();
-                tempRange.selectNodeContents(node);
-                tempRange.setStart(range.endContainer, range.endOffset);
-                let after = tempRange.toString();
-                TableModule.removeNodeChildren(node);
-                if (i === 0 && keycontext.offset > 0) {
-                    if (before.length > 0) {
-                        offset = before.length;
-                        let newtext = document.createTextNode(before);
-                        node.appendChild(newtext);
-                    } else {
+
+        if (key === "backspace") {
+            // if the selection is at the cell border
+            if (!keycontext.offset && !range.length) {
+                const selection = window.getSelection();
+                const nodeList = document.querySelectorAll(".ql-editor p");
+                // remove selected content
+                const resultNodes = nodeListToArray(nodeList).filter(cell =>
+                    selection.containsNode(cell, true)
+                );
+
+                // deletion does not affect the cell
+                if (!resultNodes.length) return true;
+
+                resultNodes.forEach((resultNode, i) => {
+                    let node = resultNode.parentNode;
+                    if (node.nodeName === 'TD') {
+                        let parentNode = node.parentNode;
                         node.remove();
+                        node = parentNode;
+                        if (node.nodeName === 'TR' && !node.childNodes.length) {
+                            parentNode = node.parentNode;
+                            node.remove();
+                            if (parentNode.nodeName === 'TABLE' && !parentNode.childNodes.length) {
+                                parentNode.remove();
+                            }
+                        }
                     }
-                } else if (i === resultNodes.length - 1) {
-                    if (after.length > 0) {
-                        let newtext = document.createTextNode(after);
-                        node.appendChild(newtext);
-                    } else {
-                        node.remove();
-                    }
-                } else {
-                    node.remove();
-                }
-            });
-            // убрать выделение
-            if (resultNodes[0].firstChild) {
-                window.getSelection().collapse(resultNodes[0].firstChild, offset);
-            } else {
-                window.getSelection().collapse(resultNodes[0], 0);
+                });
+
+                return false;
             }
-            return false;
-        }
-        // если удаляем не у границы ячейки, то передать стандартному обработчику
-        if (key === "backspace" && keycontext.offset > 0) {
+
+            // If we delete not at the cell border, then pass the standard handler
             return true;
         }
+
         let node = quill.selection.getNativeRange().start.node;
         if (!node) return false
         let blot = Parchment.find(node);
@@ -155,9 +132,10 @@ export default class TableModule {
         ) {
             return true;
         }
+
         const [prev] = quill.getLine(range.index - 1);
         const [next] = quill.getLine(range.index + 1);
-        // если в ячейки несколько строк, то можно удалять стандартно
+        // If a cell has multiple rows, you can delete as standard
         if (key === "backspace" && prev && prev.next) {
             return true;
         }

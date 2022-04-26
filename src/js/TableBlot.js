@@ -15,9 +15,7 @@ class Table extends ContainBlot {
         return node;
     }
 
-    format() {
-        this.getAttribute('table_id');
-    }
+    format() {}
 
     optimize(context) {
         super.optimize(context);

@@ -14,9 +14,7 @@ class TableRow extends ContainBlot {
         return node;
     }
 
-    format() {
-        this.getAttribute('row_id');
-    }
+    format() {}
 
     optimize(context) {
         if (this.children.length === 0) {

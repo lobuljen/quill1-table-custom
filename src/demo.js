@@ -8,8 +8,6 @@ import "./css/quill.table.css";
 // import '@fortawesome/fontawesome-free/css/solid.css';
 // import "./css/fa.scss";
 
-
-
 Quill.register("modules/table", TableModule);
 
 const defaultToolbar = [
@@ -40,7 +38,11 @@ const quill = new Quill(document.getElementById("quillContainer"), {
     modules: {
         toolbar: defaultToolbar,
         table: true,
+        history: {
+          delay: 500
+        },
         keyboard: {
+            // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
             bindings: {
                 backspace: {
                     key: "backspace",
@@ -51,6 +53,19 @@ const quill = new Quill(document.getElementById("quillContainer"), {
                     key: "delete",
                     handler: (range, keycontext) =>
                         TableModule.keyboardHandler("delete", range, keycontext)
+                },
+                undo: {
+                    ctrlKey: true,
+                    key: "z",
+                    handler: (range, keycontext) =>
+                        TableModule.keyboardHandler("undo", range, keycontext)
+                },
+                redo: {
+                    ctrlKey: true,
+                    shiftKey: true,
+                    key: "z",
+                    handler: (range, keycontext) => 
+                        TableModule.keyboardHandler("redo", range, keycontext)
                 }
             }
         }

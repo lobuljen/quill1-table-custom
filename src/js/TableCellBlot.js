@@ -18,9 +18,7 @@ class TableCell extends ContainBlot {
         return node;
     }
 
-    format() {
-        this.getAttribute('id');
-    }
+    format() {}
 
     formats() {
         // We don't inherit from FormatBlot

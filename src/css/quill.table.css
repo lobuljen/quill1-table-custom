@@ -43,19 +43,19 @@
 }
 
 .ql-picker-item[data-value="append-col"]::after {
-    content: "добавить столбец";
+    content: "Add col";
 }
 
 .ql-picker-item[data-value="remove-col"]::after {
-    content: "убрать столбец"
+    content: "Remove col"
 }
 
 .ql-picker-item[data-value="append-row"]::after {
-    content: "добавить строку";
+    content: "Add row";
 }
 
 .ql-picker-item[data-value="remove-row"]::after {
-    content: "убрать строку"
+    content: "Remove row"
 }
 
 .ql-table:nth-of-type(1),
@@ -124,7 +124,7 @@
     width: 100%;
 }
 .ql-picker-item[data-value="remove-table"]:before {
-    content: "Удалить таблицу";
+    content: "Remove table";
     width: auto;
     display: block;
     font-size: 12px;

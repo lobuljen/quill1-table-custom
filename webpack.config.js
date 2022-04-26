@@ -1,12 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     entry: './src/index.js',
     output: {
-        filename: 'quill-table-tbf.js',
-        library: 'quillTableTbf',
+        filename: 'quill1-table.js',
+        library: 'quill1Table',
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'dist')
     },
@@ -37,26 +37,13 @@ module.exports = {
             }
         ]
     },
+    optimization: {
+        minimize: true,
+        minimizer: [new TerserPlugin()]
+    },
     plugins: [
-        new UglifyJSPlugin({
-            compress: {
-                warnings: false,
-                screw_ie8: true,
-                conditionals: true,
-                unused: false,
-                comparisons: true,
-                sequences: true,
-                dead_code: true,
-                evaluate: true,
-                join_vars: true,
-                if_return: true
-            },
-            output: {
-                comments: false
-            }
-        }),
         new webpack.SourceMapDevToolPlugin({
-            filename: 'quill-table-tbf.js.map',
+            filename: 'quill1-table.js.map',
         }),
     ]
 };
