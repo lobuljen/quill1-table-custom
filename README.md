@@ -12,6 +12,7 @@ Code of quill is included in project so we can easily play with it in our tests.
 ## What would be nice to add/fix
 * the ability to insert tables. Inserts even from Word 
 * ctrl+z is still breaking table
+* split/merge cell feature
 
 ## Usage
 
