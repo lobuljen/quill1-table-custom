@@ -28,9 +28,11 @@ module.exports = {
                 use: {
                     loader: 'babel-loader',
                     options: {
-                        presets: ['es2015'],
+                        presets: ["@babel/preset-env"],
                         plugins: [
-                            'transform-runtime',
+                            "@babel/plugin-transform-runtime",
+                            "@babel/plugin-proposal-class-properties",
+                            "@babel/plugin-proposal-object-rest-spread"
                         ],
                     }
                 }

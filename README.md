@@ -8,10 +8,12 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 * Denied Backspace inside an empty cell
 * Added ability to delete a table
+* ctrl+z/ctrl+shift+z (undo/redo)
 
 ## What would be nice to add/fix
-* the ability to insert tables. Inserts even from Word 
-* ctrl+z is still breaking table
+
+* select a cell or multiple cells
+* split/merge cell feature
 
 ## Usage
 
@@ -30,7 +32,7 @@ Quill.register("modules/table", TableModule);
             table: TableModule.tableOptions()
         },
         {
-            table: ["append-row", "append-col", "remove-col", "remove-row"]
+            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table"]
         }
 ]
 
@@ -58,7 +60,7 @@ keyboard: {
                     ctrlKey: true,
                     shiftKey: true,
                     key: "z",
-                    handler: (range, keycontext) => 
+                    handler: (range, keycontext) =>
                         TableModule.keyboardHandler("redo", range, keycontext)
                 }
             }
@@ -78,12 +80,12 @@ npm run build
 * It is possible to add tables by defining rows and cols count in grid.
 * It is possible to add rows and columns to existing tables (accessible by buttons in toolbar).
 * it is possible to copy & paste table from Word. Works ok. Needs to test edge cases.
+* undo/redo. Needs to test edge cases.
 
 ### Known issues
 It is early stage so there is a lot of issues with current state.
 Still there are some worth to mention which should be dealt with.
 
 * Lists (number or bullet) in cell upon enter loose list format on previous line but keeps it on actual.
-* Undo/History breaks badly with cell deletions (disabled for now, needs to be managed).
 * Containers need order similar to Inline.order. Otherwise delta is not canonical.
 * ...

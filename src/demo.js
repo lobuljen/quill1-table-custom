@@ -16,7 +16,7 @@ const defaultToolbar = [
             table: TableModule.tableOptions()
         },
         {
-            table: ["append-row", "append-col", "remove-col", "remove-row"]
+            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table"]
         }
     ],
     ["bold", "italic", "underline", "strike"],
@@ -64,7 +64,7 @@ const quill = new Quill(document.getElementById("quillContainer"), {
                     ctrlKey: true,
                     shiftKey: true,
                     key: "z",
-                    handler: (range, keycontext) => 
+                    handler: (range, keycontext) =>
                         TableModule.keyboardHandler("redo", range, keycontext)
                 }
             }

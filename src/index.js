@@ -2,6 +2,7 @@ import Quill from 'quill';
 import Delta from 'quill-delta';
 import TableCell from './js/TableCellBlot';
 import TableRow from './js/TableRowBlot';
+import TableHistory from './js/TableHistory';
 import Table from './js/TableBlot';
 import Contain from './js/ContainBlot';
 import './css/quill.table.css';
@@ -35,6 +36,7 @@ export default class TableModule {
 
     constructor(quill, options) {
         window.quill = window.quill || quill;
+        quill.history.tableStack = {};
 
         let toolbar = quill.getModule('toolbar');
         toolbar.addHandler('table', function (value) {
@@ -101,17 +103,25 @@ export default class TableModule {
 
                 resultNodes.forEach((resultNode, i) => {
                     let node = resultNode.parentNode;
+                    let nextNode = node.nextSibling;
                     if (node.nodeName === 'TD') {
                         let parentNode = node.parentNode;
                         node.remove();
-                        node = parentNode;
-                        if (node.nodeName === 'TR' && !node.childNodes.length) {
+                        if (parentNode.nodeName === 'TR' && !parentNode.childNodes.length) {
+                            node = parentNode;
+                            nextNode = node.nextSibling;
                             parentNode = node.parentNode;
                             node.remove();
                             if (parentNode.nodeName === 'TABLE' && !parentNode.childNodes.length) {
-                                parentNode.remove();
+                                node = parentNode;
+                                nextNode = node.nextSibling;
+                                parentNode = node.parentNode;
+                                node.remove();
                             }
                         }
+
+                        TableHistory.register('remove', node, nextNode, parentNode);
+                        TableHistory.add(quill);
                     }
                 });
 

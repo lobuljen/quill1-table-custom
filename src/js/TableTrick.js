@@ -1,4 +1,5 @@
 import Quill from 'quill';
+import TableHistory from './TableHistory';
 
 let Parchment = Quill.import('parchment');
 let Container = Quill.import('blots/container');
@@ -50,6 +51,8 @@ export default class TableTrick {
                 blot = blot.parent;
             }
             blot.insertBefore(table, top_branch);
+            TableHistory.register('insert', table.domNode, top_branch.domNode, null);
+            TableHistory.add(quill);
             return node;
         } else if (value === 'append-col') {
             let td = TableTrick.find_td(quill);
@@ -66,14 +69,17 @@ export default class TableTrick {
                     if (!last_cell || index === tr.domNode.children.length) {
                         if (typeof tr.domNode.children[index] === 'undefined') {
                             tr.appendChild(new_td);
+                            TableHistory.register('insert', new_td.domNode, null, tr.domNode);
                         } else {
                             let td = Parchment.find(tr.domNode.children[index]);
                             if (td) {
                                 tr.insertBefore(new_td, td);
+                                TableHistory.register('insert', new_td.domNode, td.domNode, null);
                             }
                         }
                     }
                 });
+                TableHistory.add(quill);
             }
         } else if (value === 'remove-col') {
             let td = TableTrick.find_td(quill);
@@ -86,9 +92,11 @@ export default class TableTrick {
                 table.children.forEach(function (tr) {
                     var _td = tr.domNode.children[index];
                     if (_td) {
+                        TableHistory.register('remove', _td, _td.nextSibling, tr.domNode);
                         _td.remove();
                     }
                 });
+                TableHistory.add(quill);
             }
         } else if (value === 'append-row') {
             let td = TableTrick.find_td(quill);
@@ -99,7 +107,7 @@ export default class TableTrick {
                 const new_row = tr.clone();
                 // get row index
                 const index = Array.prototype.indexOf.call(table.domNode.children, tr.domNode) + 1;
-                
+
                 let table_id = table.domNode.getAttribute('table_id');
                 let row_id = TableTrick.random_id();
                 new_row.domNode.setAttribute('row_id', row_id);
@@ -115,12 +123,15 @@ export default class TableTrick {
 
                 if (typeof table.domNode.children[index] === 'undefined') {
                   table.appendChild(new_row);
+                  TableHistory.register('insert', new_row.domNode, null, table.domNode);
                 } else {
                   let row = Parchment.find(table.domNode.children[index]);
                   if (row) {
                     table.insertBefore(new_row, row);
+                    TableHistory.register('insert', new_row.domNode, row.domNode, null);
                   }
                 }
+                TableHistory.add(quill);
             }
         } else if (value === 'insert') {
             let table_id = TableTrick.random_id();
@@ -134,33 +145,45 @@ export default class TableTrick {
                 blot = blot.parent;
             }
             blot.insertBefore(table, top_branch);
+            TableHistory.register('insert', table.domNode, top_branch.domNode, null);
+            TableHistory.add(quill);
             return table;
         } else if (value === 'remove-row') {
             let td = TableTrick.find_td(quill);
             if (td) {
                 let tr = td.parent;
+                TableHistory.register('remove', tr.domNode, tr.next ? tr.next.domNode : null, tr.parent.domNode);
+                TableHistory.add(quill);
                 tr.remove();
             }
         } else if (value === 'remove-table') {
             let td = TableTrick.find_td(quill);
             if (td) {
                 let table = td.parent.parent;
+                TableHistory.register('remove', table.domNode, table.next ? table.next.domNode : null, table.parent.domNode);
+                TableHistory.add(quill);
                 table.remove();
             }
         } else if (value === 'undo') {
-          // TODO: manage properly undo
           if (quill.history.stack.undo.length) {
-            return !(quill.history.stack.undo[quill.history.stack.undo.length - 1].undo.ops.find(op => {
-              return op.attributes && typeof op.attributes.td !== 'undefined';
-            }));
+            const entry = quill.history.stack.undo[quill.history.stack.undo.length - 1];
+            if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
+              // Table history entry
+              TableHistory.undo(entry.id);
+              return false;
+            }
+            // Classic history entry
           }
           return true;
         } else if (value === 'redo') {
-          // TODO: manage properly redo
           if (quill.history.stack.redo.length) {
-            return !(quill.history.stack.redo[quill.history.stack.redo.length - 1].redo.ops.find(op => {
-              return op.attributes && typeof op.attributes.td !== 'undefined';
-            }));
+            const entry = quill.history.stack.redo[quill.history.stack.redo.length - 1];
+            if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
+              // Table history entry
+              TableHistory.redo(entry.id);
+              return false;
+            }
+            // Classic history entry
           }
           return true;
         }
