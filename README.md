@@ -9,10 +9,10 @@ Code of quill is included in project so we can easily play with it in our tests.
 * Denied Backspace inside an empty cell
 * Added ability to delete a table
 * ctrl+z/ctrl+shift+z (undo/redo)
+* select a cell or multiple cells
 
 ## What would be nice to add/fix
 
-* select a cell or multiple cells
 * split/merge cell feature
 
 ## Usage
@@ -81,6 +81,7 @@ npm run build
 * It is possible to add rows and columns to existing tables (accessible by buttons in toolbar).
 * it is possible to copy & paste table from Word. Works ok. Needs to test edge cases.
 * undo/redo. Needs to test edge cases.
+* select a cell or multiple cells
 
 ### Known issues
 It is early stage so there is a lot of issues with current state.

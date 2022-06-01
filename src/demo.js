@@ -16,7 +16,7 @@ const defaultToolbar = [
             table: TableModule.tableOptions()
         },
         {
-            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table"]
+            table: ["insert", "append-row", "append-col", "remove-col", "remove-row", "remove-table"]
         }
     ],
     ["bold", "italic", "underline", "strike"],

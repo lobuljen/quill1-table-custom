@@ -5,8 +5,9 @@ import TableRow from './js/TableRowBlot';
 import TableHistory from './js/TableHistory';
 import Table from './js/TableBlot';
 import Contain from './js/ContainBlot';
+import TableTrick from './js/TableTrick';
+import TableSelection from './js/TableSelection';
 import './css/quill.table.css';
-import TableTrick from "./js/TableTrick";
 
 let Container = Quill.import('blots/container');
 
@@ -26,7 +27,6 @@ Container.order = [
 ];
 
 export default class TableModule {
-
     static register() {
         Quill.register(TableCell);
         Quill.register(TableRow);
@@ -38,11 +38,17 @@ export default class TableModule {
         window.quill = window.quill || quill;
         quill.history.tableStack = {};
 
-        let toolbar = quill.getModule('toolbar');
+        // selection mouse events
+        quill.container.addEventListener('mousedown', TableSelection.mouseDown);
+        quill.container.addEventListener('mousemove', TableSelection.mouseMove);
+        quill.container.addEventListener('mouseup', TableSelection.mouseUp);
+
+        const toolbar = quill.getModule('toolbar');
         toolbar.addHandler('table', function (value) {
             return TableTrick.table_handler(value, quill);
         });
-        let clipboard = quill.getModule('clipboard');
+
+        const clipboard = quill.getModule('clipboard');
         clipboard.addMatcher('TABLE', function (node, delta) {
             return delta;
         });

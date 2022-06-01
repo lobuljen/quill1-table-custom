@@ -14,6 +14,10 @@
     white-space: normal;
 }
 
+.ql-editor table td.ql-cell-selected {
+    background-color: #cce0f8;
+}
+
 .quill-better-table-wrapper {
   overflow-x: auto;
 }
@@ -23,7 +27,7 @@
     margin-right: 0;
 }
 
-.ql-picker.ql-table .ql-picker-label svg{
+.ql-picker.ql-table .ql-picker-label svg {
     display: none;
 }
 /* .ql-formats button.ql-table::after, */
@@ -40,6 +44,10 @@
     font-weight: 900;
     padding-top: 2px;
     line-height: 1em;
+}
+
+.ql-picker-item[data-value="insert"]::after {
+  content: "Insert table";
 }
 
 .ql-picker-item[data-value="append-col"]::after {
