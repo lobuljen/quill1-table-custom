@@ -4,8 +4,8 @@ class TableHistory {
   static changes = [];
 
   // Register DOM change into current table history entry
-  static register(type, node, nextNode, parentNode) {
-    TableHistory.changes.push({ type, node, nextNode, parentNode });
+  static register(type, change) {
+    TableHistory.changes.push({ type, ...change });
   }
 
   // Add table history entry
@@ -27,7 +27,7 @@ class TableHistory {
       quill.history.tableStack[id] = TableHistory.changes;
 
       // set reference to table stack entry in a new history entry
-      quill.history.stack.undo.push({type: 'tableHistory', id: id});
+      quill.history.stack.undo.push({ type: 'tableHistory', id: id });
 
       TableHistory.changes = [];
     }, 0);
@@ -49,6 +49,18 @@ class TableHistory {
           case 'remove':
             // add node (undo)
             TableHistory.insert(change);
+            break;
+          case 'split':
+            // merge cell (redo)
+            TableHistory.merge(change, true);
+            break;
+          case 'merge':
+            // split cell (redo)
+            TableHistory.split(change, true);
+            break;
+          case 'propertyChange':
+            // property change (undo)
+            TableHistory.propertyChange(change, true);
             break;
         }
       });
@@ -80,6 +92,18 @@ class TableHistory {
             // remove node (redo)
             TableHistory.remove(change);
             break;
+          case 'split':
+            // split cell (redo)
+            TableHistory.split(change, false);
+            break;
+          case 'merge':
+            // merge cell (redo)
+            TableHistory.merge(change, false);
+            break;
+          case 'propertyChange':
+            // property change (redo)
+            TableHistory.propertyChange(change, false);
+            break;
         }
       });
     }
@@ -109,6 +133,47 @@ class TableHistory {
   static remove(change) {
     change.node.remove();
     return true;
+  }
+
+  static split(change, revert) {
+    const td = change.node;
+    // remove colspan and rowspan attributes
+    td.removeAttribute('colspan');
+    td.removeAttribute('rowspan');
+    // for each merged node, remove merge_id attribute and restore content
+    change.mergedNodes.forEach(cell => {
+      cell.node.removeAttribute('merge_id');
+      cell.node.innerHTML = cell[revert ? 'oldContent' : 'newContent'];
+    });
+    // restore content
+    td.innerHTML = change[revert ? 'oldContent' : 'newContent'];
+    return true;
+  }
+
+  static merge(change, revert) {
+    const td = change.node;
+    const cell_id = td.getAttribute('cell_id');
+    // set colspan and rowspan attributes
+    td.setAttribute('colspan', change.colSpan);
+    td.setAttribute('rowspan', change.rowSpan);
+    // for each node to merge, set merge_id attribute and restore content
+    change.mergedNodes.forEach(cell => {
+      cell.node.innerHTML = cell[revert ? 'oldContent' : 'newContent'];
+      cell.node.setAttribute('merge_id', cell_id);
+    });
+    // restore content
+    td.innerHTML = change[revert ? 'oldContent' : 'newContent'];
+    return true;
+  }
+
+  static propertyChange(change, revert) {
+    const { node, property, oldValue, newValue } = change;
+    const value = revert ? oldValue : newValue;
+    if (value !== null) {
+      node.setAttribute(property, value);
+    } else {
+      node.removeAttribute(property);
+    }
   }
 }
 

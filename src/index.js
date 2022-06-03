@@ -86,7 +86,7 @@ export default class TableModule {
         let format_end = quill.getFormat(range.index + range.length);
 
         if (key === "undo" || key === "redo") {
-          return TableTrick.table_handler(key, quill);
+            return TableTrick.table_handler(key, quill);
         }
 
         // If the event is not in a cell, then pass the standard handler
@@ -105,33 +105,36 @@ export default class TableModule {
                 );
 
                 // deletion does not affect the cell
-                if (!resultNodes.length) return true;
+                if (!resultNodes.length) {
+                    return true;
+                }
+                // do not delete if we have a selection (TODO: manage selection deletion)
+                if (TableSelection.getSelectionCoords()) {
+                    return false;
+                }
 
+                let nodeRemoved = false;
                 resultNodes.forEach((resultNode, i) => {
-                    let node = resultNode.parentNode;
-                    let nextNode = node.nextSibling;
-                    if (node.nodeName === 'TD') {
-                        let parentNode = node.parentNode;
-                        node.remove();
-                        if (parentNode.nodeName === 'TR' && !parentNode.childNodes.length) {
-                            node = parentNode;
-                            nextNode = node.nextSibling;
-                            parentNode = node.parentNode;
-                            node.remove();
-                            if (parentNode.nodeName === 'TABLE' && !parentNode.childNodes.length) {
-                                node = parentNode;
-                                nextNode = node.nextSibling;
-                                parentNode = node.parentNode;
-                                node.remove();
-                            }
+                    if (resultNode.previousSibling && resultNode.previousSibling.nodeName === 'TABLE') {
+                        // remove last cell if we are right after a table
+                        const lastCell = resultNode.previousSibling.querySelector('tr:last-child > td:not([merge_id]):last-child');
+                        if (TableTrick._removeCell(lastCell)) {
+                            nodeRemoved = true;
                         }
-
-                        TableHistory.register('remove', node, nextNode, parentNode);
-                        TableHistory.add(quill);
+                    } else if (resultNode.parentNode.nodeName === 'TD') {
+                        // remove current cell if we are inside it
+                        if (TableTrick._removeCell(resultNode.parentNode)) {
+                            nodeRemoved = true;
+                        }
                     }
                 });
 
-                return false;
+                if (nodeRemoved) {
+                    TableHistory.add(quill);
+                }
+
+                // if at least one node has been removed, then return false (do not call standard handler)
+                return !nodeRemoved;
             }
 
             // If we delete not at the cell border, then pass the standard handler

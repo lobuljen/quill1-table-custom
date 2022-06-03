@@ -55,7 +55,7 @@ export default class TableTrick {
       blot = blot.parent;
     }
     blot.insertBefore(table, top_branch);
-    TableHistory.register('insert', table.domNode, top_branch.domNode, null);
+    TableHistory.register('insert', { node: table.domNode, nextNode: top_branch.domNode });
     TableHistory.add(quill);
   }
 
@@ -74,7 +74,7 @@ export default class TableTrick {
     }
 
     if (table) {
-      TableHistory.register('remove', table.domNode, table.next ? table.next.domNode : null, table.parent.domNode);
+      TableHistory.register('remove', { node: table.domNode, nextNode: table.next ? table.next.domNode : null, parentNode: table.parent.domNode });
       TableHistory.add(quill);
       table.remove();
     }
@@ -104,12 +104,12 @@ export default class TableTrick {
         if (!last_cell || index === tr.domNode.children.length) {
           if (typeof tr.domNode.children[index] === 'undefined') {
             tr.appendChild(new_td);
-            TableHistory.register('insert', new_td.domNode, null, tr.domNode);
+            TableHistory.register('insert', { node: new_td.domNode, parentNode: tr.domNode });
           } else {
             const td = Parchment.find(tr.domNode.children[index]);
             if (td) {
               tr.insertBefore(new_td, td);
-              TableHistory.register('insert', new_td.domNode, td.domNode, null);
+              TableHistory.register('insert', { node: new_td.domNode, nextNode: td.domNode });
             }
           }
         }
@@ -135,7 +135,13 @@ export default class TableTrick {
       const table = tr.parent;
       const new_row = tr.clone();
       // get row index
-      const index = Array.prototype.indexOf.call(table.domNode.children, tr.domNode) + 1;
+      let index = Array.prototype.indexOf.call(table.domNode.children, tr.domNode) + 1;
+
+      const rowSpan = Number.parseInt(td.domNode.getAttribute('rowspan') || 1);
+      if (rowSpan > 1) {
+        // add row below merged cell
+        index += rowSpan - 1;
+      }
 
       const table_id = table.domNode.getAttribute('table_id');
       const row_id = TableTrick.random_id();
@@ -152,12 +158,12 @@ export default class TableTrick {
 
       if (typeof table.domNode.children[index] === 'undefined') {
         table.appendChild(new_row);
-        TableHistory.register('insert', new_row.domNode, null, table.domNode);
+        TableHistory.register('insert', { node: new_row.domNode, parentNode: table.domNode });
       } else {
         const row = Parchment.find(table.domNode.children[index]);
         if (row) {
           table.insertBefore(new_row, row);
-          TableHistory.register('insert', new_row.domNode, row.domNode, null);
+          TableHistory.register('insert', { node: new_row.domNode, nextNode: row.domNode });
         }
       }
       TableHistory.add(quill);
@@ -190,7 +196,22 @@ export default class TableTrick {
         table.children.forEach(function (tr) {
           const _td = tr.domNode.children[colIndex];
           if (_td) {
-            TableHistory.register('remove', _td, _td.nextSibling, tr.domNode);
+            const merge_id = _td.getAttribute('merge_id');
+            if (merge_id) {
+              // if a cell is merged to another cell, get target cell and decrement colspan
+              const cell = table.domNode.querySelector(`td[cell_id="${merge_id}"]`);
+              if (cell) {
+                const colSpan = Number.parseInt(cell.getAttribute('colspan'));
+                cell.setAttribute('colspan', colSpan - 1);
+                TableHistory.register('propertyChange', { node: cell, property: 'colspan', oldValue: colSpan, newValue: colSpan - 1 });
+              }
+            }
+
+            if (_td.getAttribute('colspan')) {
+              TableTrick._split(_td);
+            }
+
+            TableHistory.register('remove', { node: _td, nextNode: _td.nextSibling, parentNode: tr.domNode });
             _td.remove();
           }
         });
@@ -203,6 +224,26 @@ export default class TableTrick {
   static removeRow(quill) {
     const coords = TableSelection.getSelectionCoords();
     TableSelection.resetSelection(quill.container);
+
+    const manageMergedCells = (tr) => {
+      [...tr.children].forEach(function (td) {
+        const merge_id = td.getAttribute('merge_id');
+        if (merge_id) {
+          // if a cell is merged to another cell, get target cell and decrement rowspan
+          const cell = tr.parentNode.querySelector(`td[cell_id="${merge_id}"]`);
+          if (cell) {
+            const rowSpan = Number.parseInt(cell.getAttribute('rowspan'));
+            cell.setAttribute('rowspan', rowSpan - 1);
+            TableHistory.register('propertyChange', { node: cell, property: 'rowspan', oldValue: rowSpan, newValue: rowSpan - 1 });
+          }
+        }
+
+        if (td.getAttribute('rowspan')) {
+          TableTrick._split(td);
+        }
+      });
+    };
+
     if (coords) {
       // if we have a selection, remove all selected rows
       const table = TableSelection.selectionStartElement.closest('table');
@@ -212,7 +253,8 @@ export default class TableTrick {
       for (let i = 0; i < rowsToRemove; i++) {
         const _tr = table.children[rowIndex];
         if (_tr) {
-          TableHistory.register('remove', _tr, _tr.nextSibling, table);
+          manageMergedCells(_tr);
+          TableHistory.register('remove', { node: _tr, nextNode: _tr.nextSibling, parentNode: table });
           _tr.remove();
         }
       }
@@ -221,12 +263,141 @@ export default class TableTrick {
       const td = TableTrick.find_td(quill);
       if (td) {
         const tr = td.parent;
-        TableHistory.register('remove', tr.domNode, tr.next ? tr.next.domNode : null, tr.parent.domNode);
+        manageMergedCells(tr.domNode);
+        TableHistory.register('remove', { node: tr.domNode, nextNode: tr.next ? tr.next.domNode : null, parentNode: tr.parent.domNode });
         tr.remove();
       }
     }
     TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
     TableHistory.add(quill);
+  }
+
+  static splitCell(quill) {
+    // get cell
+    const coords = TableSelection.getSelectionCoords();
+    TableSelection.resetSelection(quill.container);
+    let td = TableTrick.find_td(quill);
+    if (coords && coords.maxX - coords.minX === 0 && coords.maxY - coords.minY === 0) {
+      const _td = TableSelection.getCellAt(coords.minX, coords.minY);
+      td = Parchment.find(_td);
+    }
+
+    if (td && TableTrick._split(td.domNode)) {
+      // add changes to history
+      // TableTrick._split already register 'split' change to history
+      TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+      //TableHistory.register('split', { node: td.domNode, mergedNodes, colSpan, rowSpan, oldContent: td.domNode.innerHTML, newContent: td.domNode.innerHTML });
+      TableHistory.add(quill);
+    }
+  }
+
+  static mergeSelection(quill) {
+    // get selection
+    const coords = TableSelection.getSelectionCoords();
+    TableSelection.resetSelection(quill.container);
+    if (coords) {
+      // TODO: manage deleted cells
+      const table = TableSelection.selectionStartElement.closest('table');
+      const colSpan = coords.maxX - coords.minX + 1;
+      const rowSpan = coords.maxY - coords.minY + 1;
+      if (colSpan > 1 || rowSpan > 1) {
+        let node = null;
+        let oldContent = null;
+        let mergedNodes = [];
+        let mergedCellContent = [];
+        let cell_id;
+        // get selected cells
+        for (let y = coords.minY; y <= coords.maxY; y++) {
+          for (let x = coords.minX; x <= coords.maxX; x++) {
+            const cell = table.children[y].children[x];
+            if (cell) {
+              if (cell.textContent !== '') {
+                // merge all contents
+                mergedCellContent.push(cell.innerHTML);
+              }
+
+              if (!node) {
+                // first cell (this cell will be kept)
+                cell_id = cell.getAttribute('cell_id');
+                // set colspan and rowspan attributes
+                cell.setAttribute('colspan', colSpan);
+                cell.setAttribute('rowspan', rowSpan);
+                node = cell;
+                oldContent = node.innerHTML;
+              } else {
+                // other cells that will be merged
+                let _oldContent = cell.innerHTML;
+                cell.textContent = '';
+                cell.setAttribute('merge_id', cell_id);
+                // update mergedNodes array for history purposes
+                mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: cell.innerHTML });
+              }
+            } else {
+              // cell does not exist, ???
+            }
+          }
+        }
+
+        if (node && mergedNodes.length) {
+          // set merged content
+          node.innerHTML = mergedCellContent.join('');
+        }
+        // add changes to history
+        TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+        TableHistory.register('merge', { node, mergedNodes, colSpan, rowSpan, oldContent, newContent: node.innerHTML });
+        TableHistory.add(quill);
+      }
+    }
+  }
+
+  static _removeCell(cell) {
+    let nextNode = cell.nextSibling;
+    if (cell.nodeName === 'TD') {
+      if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
+        TableTrick._split(cell);
+      }
+
+      let node = cell;
+      let parentNode = cell.parentNode;
+      cell.remove();
+      if (parentNode.nodeName === 'TR' && !parentNode.childNodes.length) {
+        node = parentNode;
+        nextNode = node.nextSibling;
+        parentNode = node.parentNode;
+        node.remove();
+        if (parentNode.nodeName === 'TABLE' && !parentNode.childNodes.length) {
+          node = parentNode;
+          nextNode = node.nextSibling;
+          parentNode = node.parentNode;
+          node.remove();
+        }
+      }
+      TableHistory.register('remove', { node, nextNode, parentNode });
+      return true;
+    }
+    return false;
+  }
+
+  static _split(cell) {
+    const cell_id = cell.getAttribute('cell_id');
+    // get merged nodes and update mergedNodes array for history purposes, remove merge_id attribute
+    let mergedNodes = [];
+    cell.parentNode.parentNode.querySelectorAll(`td[merge_id="${cell_id}"`).forEach(node => {
+      mergedNodes.push({ node, oldContent: node.innerHTML, newContent: node.innerHTML });
+      node.removeAttribute('merge_id');
+    });
+
+    const colSpan = Number.parseInt(cell.getAttribute('colspan') || 1);
+    const rowSpan = Number.parseInt(cell.getAttribute('rowspan') || 1);
+    if (colSpan > 1 || rowSpan > 1) {
+      // remove colspan and rowspan attributes
+      cell.removeAttribute('colspan');
+      cell.removeAttribute('rowspan');
+      // register changes to history
+      TableHistory.register('split', { node: cell, mergedNodes, colSpan, rowSpan, oldContent: cell.innerHTML, newContent: cell.innerHTML });
+      return true;
+    }
+    return false;
   }
 
   static table_handler(value, quill) {
@@ -247,6 +418,10 @@ export default class TableTrick {
       TableTrick.insertTable(quill, 1, 1);
     } else if (value === 'remove-table') {
       TableTrick.removeTable(quill);
+    } else if (value === 'split-cell') {
+      TableTrick.splitCell(quill);
+    } else if (value === 'merge-selection') {
+      TableTrick.mergeSelection(quill);
     } else if (value === 'undo') {
       if (quill.history.stack.undo.length) {
         const entry = quill.history.stack.undo[quill.history.stack.undo.length - 1];

@@ -11,66 +11,66 @@ import "./css/quill.table.css";
 Quill.register("modules/table", TableModule);
 
 const defaultToolbar = [
-    [
-        {
-            table: TableModule.tableOptions()
-        },
-        {
-            table: ["insert", "append-row", "append-col", "remove-col", "remove-row", "remove-table"]
-        }
-    ],
-    ["bold", "italic", "underline", "strike"],
-    ["blockquote", "code-block", "image"],
+  [
+    {
+      table: TableModule.tableOptions()
+    },
+    {
+      table: ["insert", "append-row", "append-col", "remove-col", "remove-row", "remove-table", "split-cell", "merge-selection"]
+    }
+  ],
+  ["bold", "italic", "underline", "strike"],
+  ["blockquote", "code-block", "image"],
 
-    [{ list: "ordered" }, { list: "bullet" }],
+  [{ list: "ordered" }, { list: "bullet" }],
 
-    [{ indent: "-1" }, { indent: "+1" }],
-    [{ header: [1, 2, 3, 4, 5, 6, false] }],
+  [{ indent: "-1" }, { indent: "+1" }],
+  [{ header: [1, 2, 3, 4, 5, 6, false] }],
 
-    [{ color: [] }, { background: [] }],
-    [{ font: [] }],
-    [{ align: [] }],
+  [{ color: [] }, { background: [] }],
+  [{ font: [] }],
+  [{ align: [] }],
 
-    ["clean"]
+  ["clean"]
 ];
 
 const quill = new Quill(document.getElementById("quillContainer"), {
-    modules: {
-        toolbar: defaultToolbar,
-        table: true,
-        history: {
-          delay: 500
-        },
-        keyboard: {
-            // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
-            bindings: {
-                backspace: {
-                    key: "backspace",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("backspace", range, keycontext)
-                },
-                delete: {
-                    key: "delete",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("delete", range, keycontext)
-                },
-                undo: {
-                    ctrlKey: true,
-                    key: "z",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("undo", range, keycontext)
-                },
-                redo: {
-                    ctrlKey: true,
-                    shiftKey: true,
-                    key: "z",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("redo", range, keycontext)
-                }
-            }
-        }
+  modules: {
+    toolbar: defaultToolbar,
+    table: true,
+    history: {
+      delay: 500
     },
-    theme: "snow"
+    keyboard: {
+      // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
+      bindings: {
+        backspace: {
+          key: "backspace",
+          handler: (range, keycontext) =>
+            TableModule.keyboardHandler("backspace", range, keycontext)
+        },
+        delete: {
+          key: "delete",
+          handler: (range, keycontext) =>
+            TableModule.keyboardHandler("delete", range, keycontext)
+        },
+        undo: {
+          ctrlKey: true,
+          key: "z",
+          handler: (range, keycontext) =>
+            TableModule.keyboardHandler("undo", range, keycontext)
+        },
+        redo: {
+          ctrlKey: true,
+          shiftKey: true,
+          key: "z",
+          handler: (range, keycontext) =>
+            TableModule.keyboardHandler("redo", range, keycontext)
+        }
+      }
+    }
+  },
+  theme: "snow"
 });
 
 window.quill = quill;

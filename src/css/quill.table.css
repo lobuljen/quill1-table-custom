@@ -18,6 +18,10 @@
     background-color: #cce0f8;
 }
 
+.ql-editor table td[merge_id] {
+    display: none;
+}
+
 .quill-better-table-wrapper {
   overflow-x: auto;
 }
@@ -55,7 +59,7 @@
 }
 
 .ql-picker-item[data-value="remove-col"]::after {
-    content: "Remove col"
+    content: "Remove col";
 }
 
 .ql-picker-item[data-value="append-row"]::after {
@@ -63,7 +67,23 @@
 }
 
 .ql-picker-item[data-value="remove-row"]::after {
-    content: "Remove row"
+    content: "Remove row";
+}
+
+.ql-picker-item[data-value="split-cell"]::after {
+    content: "Split cell";
+}
+
+.ql-picker-item[data-value="merge-selection"]::after {
+    content: "Merge selection";
+}
+
+.ql-picker-item[data-value="undo"]::after {
+    content: "Undo";
+}
+
+.ql-picker-item[data-value="redo"]::after {
+    content: "Redo";
 }
 
 .ql-table:nth-of-type(1),
