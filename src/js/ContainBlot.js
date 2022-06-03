@@ -11,12 +11,11 @@ class ContainBlot extends Container {
     }
 
     formats(domNode) {
-        if(domNode){
+        if (domNode) {
             return domNode.tagName;
         }
         return this.domNode.tagName;
     }
-
 }
 
 ContainBlot.blotName = 'contain';

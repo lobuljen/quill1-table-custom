@@ -3,7 +3,6 @@ import TableTrick from './TableTrick';
 import TableRow from './TableRowBlot';
 import ContainBlot from './ContainBlot';
 
-let Container = Quill.import('blots/container');
 let Parchment = Quill.import('parchment');
 
 class Table extends ContainBlot {
@@ -23,7 +22,8 @@ class Table extends ContainBlot {
         if (next != null && next.prev === this &&
             next.statics.blotName === this.statics.blotName &&
             next.domNode.tagName === this.domNode.tagName &&
-            next.domNode.getAttribute('table_id') === this.domNode.getAttribute('table_id')) {
+            next.domNode.getAttribute('table_id') === this.domNode.getAttribute('table_id')
+        ) {
             next.moveChildren(this);
             next.remove();
         }
@@ -31,15 +31,14 @@ class Table extends ContainBlot {
 
     insertBefore(childBlot, refBlot) {
         if (this.statics.allowedChildren != null && !this.statics.allowedChildren.some(function (child) {
-                return childBlot instanceof child;
-            })) {
+            return childBlot instanceof child;
+        })) {
             let newChild = Parchment.create(this.statics.defaultChild, TableTrick.random_id());
             newChild.appendChild(childBlot);
             childBlot = newChild;
         }
         super.insertBefore(childBlot, refBlot)
     }
-
 }
 
 Table.blotName = 'table';

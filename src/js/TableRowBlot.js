@@ -3,7 +3,6 @@ import TableCell from './TableCellBlot';
 import ContainBlot from './ContainBlot';
 import TableTrick from './TableTrick';
 
-let Container = Quill.import('blots/container');
 let Parchment = Quill.import('parchment');
 
 class TableRow extends ContainBlot {
@@ -22,8 +21,7 @@ class TableRow extends ContainBlot {
                 var child = this.createDefaultChild();
                 this.appendChild(child);
                 child.optimize(context);
-            }
-            else {
+            } else {
                 this.remove();
             }
         }
@@ -31,7 +29,8 @@ class TableRow extends ContainBlot {
         if (next != null && next.prev === this &&
             next.statics.blotName === this.statics.blotName &&
             next.domNode.tagName === this.domNode.tagName &&
-            next.domNode.getAttribute('row_id') === this.domNode.getAttribute('row_id')) {
+            next.domNode.getAttribute('row_id') === this.domNode.getAttribute('row_id')
+        ) {
             next.moveChildren(this);
             next.remove();
         }
@@ -39,8 +38,8 @@ class TableRow extends ContainBlot {
 
     insertBefore(childBlot, refBlot) {
         if (this.statics.allowedChildren != null && !this.statics.allowedChildren.some(function (child) {
-                return childBlot instanceof child;
-            })) {
+            return childBlot instanceof child;
+        })) {
             let newChild = this.createDefaultChild(refBlot);
             newChild.appendChild(childBlot);
             childBlot = newChild;

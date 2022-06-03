@@ -7,7 +7,6 @@ let BlockEmbed = Quill.import('blots/block/embed');
 let Parchment = Quill.import('parchment');
 
 class TableCell extends ContainBlot {
-
     static create(value) {
         let tagName = 'td';
         let node = super.create(tagName);
@@ -15,6 +14,15 @@ class TableCell extends ContainBlot {
         node.setAttribute('table_id', ids[0]);
         node.setAttribute('row_id', ids[1]);
         node.setAttribute('cell_id', ids[2]);
+        if (ids[3]) {
+            node.setAttribute('merge_id', ids[3]);
+        }
+        if (ids[4]) {
+            node.setAttribute('colspan', ids[4]);
+        }
+        if (ids[5]) {
+            node.setAttribute('rowspan', ids[5]);
+        }
         return node;
     }
 
@@ -24,9 +32,14 @@ class TableCell extends ContainBlot {
         // We don't inherit from FormatBlot
         return {
             [this.statics.blotName]:
-            this.domNode.getAttribute('table_id') + '|' +
-            this.domNode.getAttribute('row_id') + '|' +
-            this.domNode.getAttribute('cell_id')
+            [
+              this.domNode.getAttribute('table_id'),
+              this.domNode.getAttribute('row_id'),
+              this.domNode.getAttribute('cell_id'),
+              this.domNode.getAttribute('merge_id'),
+              this.domNode.getAttribute('colspan'),
+              this.domNode.getAttribute('rowspan')
+            ].join('|')
         }
     }
 
@@ -39,7 +52,7 @@ class TableCell extends ContainBlot {
                 this.moveChildren(parent, this);
                 this.remove();
                 return;
-            } else if (parent.statics.blotName != 'tr') {
+            } else if (parent.statics.blotName !== 'tr') {
                 // we will mark td position, put in table and replace mark
                 let mark = Parchment.create('block');
                 this.parent.insertBefore(mark, this.next);
@@ -56,7 +69,8 @@ class TableCell extends ContainBlot {
         if (next != null && next.prev === this &&
             next.statics.blotName === this.statics.blotName &&
             next.domNode.tagName === this.domNode.tagName &&
-            next.domNode.getAttribute('cell_id') === this.domNode.getAttribute('cell_id')) {
+            next.domNode.getAttribute('cell_id') === this.domNode.getAttribute('cell_id')
+        ) {
             next.moveChildren(this);
             next.remove();
         }
@@ -64,8 +78,8 @@ class TableCell extends ContainBlot {
 
     insertBefore(childBlot, refBlot) {
         if (this.statics.allowedChildren != null && !this.statics.allowedChildren.some(function (child) {
-                return childBlot instanceof child;
-            })) {
+            return childBlot instanceof child;
+        })) {
             let newChild = Parchment.create(this.statics.defaultChild);
             newChild.appendChild(childBlot);
             childBlot = newChild;

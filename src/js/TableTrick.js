@@ -39,7 +39,7 @@ export default class TableTrick {
       table.appendChild(tr);
       for (let ci = 0; ci < col_count; ci++) {
         const cell_id = TableTrick.random_id();
-        const value = table_id + '|' + row_id + '|' + cell_id;
+        const value = [table_id, row_id, cell_id].join('|');
         const td = Parchment.create('td', value);
         tr.appendChild(td);
         const p = Parchment.create('block');
@@ -100,7 +100,7 @@ export default class TableTrick {
       table.children.forEach(function (tr) {
         const row_id = tr.domNode.getAttribute('row_id');
         const cell_id = TableTrick.random_id();
-        const new_td = Parchment.create('td', table_id + '|' + row_id + '|' + cell_id);
+        const new_td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
         if (!last_cell || index === tr.domNode.children.length) {
           if (typeof tr.domNode.children[index] === 'undefined') {
             tr.appendChild(new_td);
@@ -148,7 +148,7 @@ export default class TableTrick {
       new_row.domNode.setAttribute('row_id', row_id);
       for (let i = col_count - 1; i >= 0; i--) {
         const cell_id = TableTrick.random_id();
-        const td = Parchment.create('td', table_id + '|' + row_id + '|' + cell_id);
+        const td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
         new_row.appendChild(td);
         const p = Parchment.create('block');
         td.appendChild(p);
