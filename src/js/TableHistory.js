@@ -53,10 +53,14 @@ class TableHistory {
           case 'split':
             // merge cell (redo)
             TableHistory.merge(change, true);
+            // force triggering text-change event (TODO: improve)
+            quill.emitter.emit('text-change', null, null, 'user');
             break;
           case 'merge':
             // split cell (redo)
             TableHistory.split(change, true);
+            // force triggering text-change event (TODO: improve)
+            quill.emitter.emit('text-change', null, null, 'user');
             break;
           case 'propertyChange':
             // property change (undo)

@@ -286,7 +286,8 @@ export default class TableTrick {
       // add changes to history
       // TableTrick._split already register 'split' change to history
       TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-      //TableHistory.register('split', { node: td.domNode, mergedNodes, colSpan, rowSpan, oldContent: td.domNode.innerHTML, newContent: td.domNode.innerHTML });
+      // force triggering text-change event (TODO: improve)
+      quill.emitter.emit('text-change', null, null, 'user');
       TableHistory.add(quill);
     }
   }
@@ -332,8 +333,6 @@ export default class TableTrick {
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: cell.innerHTML });
               }
-            } else {
-              // cell does not exist, ???
             }
           }
         }
@@ -345,6 +344,8 @@ export default class TableTrick {
         // add changes to history
         TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
         TableHistory.register('merge', { node, mergedNodes, colSpan, rowSpan, oldContent, newContent: node.innerHTML });
+        // force triggering text-change event (TODO: improve)
+        quill.emitter.emit('text-change', null, null, 'user');
         TableHistory.add(quill);
       }
     }
