@@ -129,6 +129,14 @@ class TableHistory {
       } else {
         parentNode.appendChild(change.node);
       }
+
+      // force re-rendering cells border (Firefox bug)
+      const tableNode = parentNode.closest('table');
+      tableNode.style.setProperty('overflow', (window.getComputedStyle(tableNode)['overflow'] || 'visible') === 'visible' ? 'hidden' : 'visible');
+      setTimeout(() => {
+        tableNode.style.removeProperty('overflow');
+      }, 0);
+
       return true;
     }
     return false;
