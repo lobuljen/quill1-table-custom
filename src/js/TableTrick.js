@@ -297,7 +297,6 @@ export default class TableTrick {
     const coords = TableSelection.getSelectionCoords();
     TableSelection.resetSelection(quill.container);
     if (coords) {
-      // TODO: manage deleted cells
       const table = TableSelection.selectionStartElement.closest('table');
       const colSpan = coords.maxX - coords.minX + 1;
       const rowSpan = coords.maxY - coords.minY + 1;
@@ -351,28 +350,104 @@ export default class TableTrick {
     }
   }
 
+  static removeCell(quill) {
+    // get cell
+    const coords = TableSelection.getSelectionCoords();
+    TableSelection.resetSelection(quill.container);
+    let td = TableTrick.find_td(quill);
+    if (coords && coords.maxX - coords.minX === 0 && coords.maxY - coords.minY === 0) {
+      const _td = TableSelection.getCellAt(coords.minX, coords.minY);
+      td = Parchment.find(_td);
+    }
+
+    if (td && TableTrick._removeCell(td.domNode)) {
+      // add changes to history
+      // TableTrick._removeCell already register 'remove' change to history
+      TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+      // force triggering text-change event (TODO: improve)
+      quill.emitter.emit('text-change', null, null, 'user');
+      TableHistory.add(quill);
+    }
+  }
+
+  static removeSelection(quill) {
+    // get selection
+    const coords = TableSelection.getSelectionCoords();
+    TableSelection.resetSelection(quill.container);
+    if (coords) {
+      const table = TableSelection.selectionStartElement.closest('table');
+      let nodesToRemove = [];
+      for (let y = coords.minY; y <= coords.maxY; y++) {
+        for (let x = coords.minX; x <= coords.maxX; x++) {
+          const cell = table.children[y].children[x];
+          if (cell) {
+            // if a cell is merged to another cell, split target cell
+            const merge_id = cell.getAttribute('merge_id');
+            if (merge_id) {
+              const targetCell = table.querySelector(`td[cell_id="${merge_id}"]`);
+              if (targetCell) {
+                TableTrick._split(targetCell);
+              }
+            }
+
+            if (cell.getAttribute('rowspan') || cell.getAttribute('colspan')) {
+              TableTrick._split(cell);
+            }
+
+            // remove cell (and row if empty)
+            let node = cell;
+            let nextNode = cell.nextSibling;
+            let parentNode = cell.parentNode;
+            if (parentNode.nodeName === 'TR' && parentNode.childNodes.length <= 1) {
+              // remove row if only one node (cell to be removed)
+              node = parentNode;
+              nextNode = node.nextSibling;
+              parentNode = node.parentNode;
+            }
+            nodesToRemove.push(node);
+            TableHistory.register('remove', { node, nextNode, parentNode });
+          }
+        }
+      }
+
+      nodesToRemove.forEach(node => {
+        node.remove();
+      });
+
+      // add changes to history
+      TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+      // force triggering text-change event (TODO: improve)
+      quill.emitter.emit('text-change', null, null, 'user');
+      TableHistory.add(quill);
+    }
+  }
+
   static _removeCell(cell) {
-    let nextNode = cell.nextSibling;
+    const cell_id = cell.getAttribute('cell_id');
     if (cell.nodeName === 'TD') {
       if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
-        TableTrick._split(cell);
+        // remove merged cells
+        cell.parentNode.parentNode.querySelectorAll(`td[merge_id="${cell_id}"`).forEach(node => {
+          TableTrick._removeCell(node);
+        });
       }
 
       let node = cell;
+      let nextNode = cell.nextSibling;
       let parentNode = cell.parentNode;
-      cell.remove();
-      if (parentNode.nodeName === 'TR' && !parentNode.childNodes.length) {
+      if (parentNode.nodeName === 'TR' && parentNode.childNodes.length <= 1) {
+        // remove row if only one node (cell to be removed)
         node = parentNode;
         nextNode = node.nextSibling;
         parentNode = node.parentNode;
-        node.remove();
-        if (parentNode.nodeName === 'TABLE' && !parentNode.childNodes.length) {
+        if (parentNode.nodeName === 'TABLE' && parentNode.childNodes.length <= 1) {
+          // remove table if only one node (row to be removed)
           node = parentNode;
           nextNode = node.nextSibling;
           parentNode = node.parentNode;
-          node.remove();
         }
       }
+      node.remove();
       TableHistory.register('remove', { node, nextNode, parentNode });
       return true;
     }
@@ -407,44 +482,61 @@ export default class TableTrick {
       const row_count = Number.parseInt(sizes[1]);
       const col_count = Number.parseInt(sizes[2]);
       TableTrick.insertTable(quill, col_count, row_count);
-    } else if (value === 'append-col') {
-      TableTrick.addCol(quill);
-    } else if (value === 'remove-col') {
-      TableTrick.removeCol(quill);
-    } else if (value === 'append-row') {
-      TableTrick.addRow(quill);
-    } else if (value === 'remove-row') {
-      TableTrick.removeRow(quill);
-    } else if (value === 'insert') {
-      TableTrick.insertTable(quill, 1, 1);
-    } else if (value === 'remove-table') {
-      TableTrick.removeTable(quill);
-    } else if (value === 'split-cell') {
-      TableTrick.splitCell(quill);
-    } else if (value === 'merge-selection') {
-      TableTrick.mergeSelection(quill);
-    } else if (value === 'undo') {
-      if (quill.history.stack.undo.length) {
-        const entry = quill.history.stack.undo[quill.history.stack.undo.length - 1];
-        if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
-          // Table history entry
-          TableHistory.undo(entry.id);
-          return false;
-        }
-        // Classic history entry
+    } else {
+      switch (value) {
+        case 'append-col':
+          TableTrick.addCol(quill);
+          break;
+        case 'remove-col':
+          TableTrick.removeCol(quill);
+          break;
+        case 'append-row':
+          TableTrick.addRow(quill);
+          break;
+        case 'remove-row':
+          TableTrick.removeRow(quill);
+          break;
+        case 'insert':
+          TableTrick.insertTable(quill, 1, 1);
+          break;
+        case 'remove-table':
+          TableTrick.removeTable(quill);
+          break;
+        case 'split-cell':
+          TableTrick.splitCell(quill);
+          break;
+        case 'merge-selection':
+          TableTrick.mergeSelection(quill);
+          break;
+        case 'remove-cell':
+          TableTrick.removeCell(quill);
+          break;
+        case 'remove-selection':
+          TableTrick.removeSelection(quill);
+          break;
+        case 'undo':
+          if (quill.history.stack.undo.length) {
+            const entry = quill.history.stack.undo[quill.history.stack.undo.length - 1];
+            if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
+              // Table history entry
+              TableHistory.undo(entry.id);
+              return false;
+            }
+            // Classic history entry
+          }
+          return true;
+        case 'redo':
+          if (quill.history.stack.redo.length) {
+            const entry = quill.history.stack.redo[quill.history.stack.redo.length - 1];
+            if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
+              // Table history entry
+              TableHistory.redo(entry.id);
+              return false;
+            }
+            // Classic history entry
+          }
+          return true;
       }
-      return true;
-    } else if (value === 'redo') {
-      if (quill.history.stack.redo.length) {
-        const entry = quill.history.stack.redo[quill.history.stack.redo.length - 1];
-        if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
-          // Table history entry
-          TableHistory.redo(entry.id);
-          return false;
-        }
-        // Classic history entry
-      }
-      return true;
     }
   }
 }

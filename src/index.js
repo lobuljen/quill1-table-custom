@@ -125,8 +125,8 @@ export default class TableModule {
                     if (resultNode.previousSibling) {
                         if (resultNode.previousSibling.nodeName === 'TABLE') {
                             // remove last cell if we are right after a table
-                            const lastCell = resultNode.previousSibling.querySelector('tr:last-child > td:not([merge_id]):last-child');
-                            if (TableTrick._removeCell(lastCell)) {
+                            const cells = resultNode.previousSibling.querySelectorAll('td:not([merge_id])');
+                            if (cells.length && TableTrick._removeCell(cells[cells.length - 1])) {
                                 nodeRemoved = true;
                             }
                         }

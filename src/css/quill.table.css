@@ -23,7 +23,7 @@
 }
 
 .quill-better-table-wrapper {
-  overflow-x: auto;
+    overflow-x: auto;
 }
 
 .ql-picker.ql-table {
@@ -76,6 +76,14 @@
 
 .ql-picker-item[data-value="merge-selection"]::after {
     content: "Merge selection";
+}
+
+.ql-picker-item[data-value="remove-cell"]::after {
+    content: "Remove cell";
+}
+
+.ql-picker-item[data-value="remove-selection"]::after {
+    content: "Remove selection";
 }
 
 .ql-picker-item[data-value="undo"]::after {

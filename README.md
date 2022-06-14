@@ -11,10 +11,10 @@ Code of quill is included in project so we can easily play with it in our tests.
 * ctrl+z/ctrl+shift+z (undo/redo)
 * select a cell or multiple cells
 * split/merge cell feature
+* remove cell/selection feature
 
 ## What would be nice to add/fix
 
-* remove cell/selection action
 * hide actions in toolbar if they cannot be executed (ex: adding a row outside a table) / provide a check method
 * improve text-change event (in some cases we have to force triggering the event with null values)
 
@@ -35,7 +35,7 @@ Quill.register("modules/table", TableModule);
             table: TableModule.tableOptions()
         },
         {
-            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table", "split-cell", "merge-selection", "undo", "redo"]
+            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table", "split-cell", "merge-selection", "remove-cell", "remove-selection", "undo", "redo"]
         }
 ]
 

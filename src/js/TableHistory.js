@@ -131,7 +131,7 @@ class TableHistory {
       }
 
       // force re-rendering cells border (Firefox bug)
-      const tableNode = parentNode.closest('table');
+      const tableNode = change.node.nodeName === 'TABLE' ? change.node : parentNode.closest('table');
       tableNode.style.setProperty('overflow', (window.getComputedStyle(tableNode)['overflow'] || 'visible') === 'visible' ? 'hidden' : 'visible');
       setTimeout(() => {
         tableNode.style.removeProperty('overflow');
