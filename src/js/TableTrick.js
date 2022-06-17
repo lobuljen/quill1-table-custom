@@ -80,8 +80,9 @@ export default class TableTrick {
     }
   }
 
-  static addCol(quill) {
-    // append col right to current cell or at rightmost cell of selection
+  static addCol(quill, direction = 'after') {
+    // direction = before: append col before current cell or before leftmost cell of selection
+    // direction = after: append col after current cell or after rightmost cell of selection
     const coords = TableSelection.getSelectionCoords();
     let td = TableTrick.find_td(quill);
     if (coords) {
@@ -92,15 +93,29 @@ export default class TableTrick {
     }
 
     if (td) {
+      if (direction !== 'before' && td.domNode.getAttribute('colspan')) {
+        // for direction = after, if the cell is merged, append column at the end of merged cell (not after the first cell)
+        const endCell = td.parent.domNode.children[
+          Array.prototype.indexOf.call(td.parent.domNode.children, td.domNode) + Number.parseInt(td.domNode.getAttribute('colspan')) - 1
+        ];
+        if (endCell) {
+          td = Parchment.find(endCell);
+        }
+      }
+
       // get cell index
-      const index = Array.prototype.indexOf.call(td.parent.domNode.children, td.domNode) + 1;
+      const index = Array.prototype.indexOf.call(td.parent.domNode.children, td.domNode) + (direction === 'before' ? 0 : 1);
+      // is this the last cell?
       const last_cell = index === td.parent.domNode.children.length;
       const table = td.parent.parent;
       const table_id = table.domNode.getAttribute('table_id');
+      let managed_merged_cells = [];
+
       table.children.forEach(function (tr) {
         const row_id = tr.domNode.getAttribute('row_id');
         const cell_id = TableTrick.random_id();
         const new_td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
+        // do not add the cell for this row if selected cell is the last cell and if this row has more or less cells
         if (!last_cell || index === tr.domNode.children.length) {
           if (typeof tr.domNode.children[index] === 'undefined') {
             tr.appendChild(new_td);
@@ -108,6 +123,27 @@ export default class TableTrick {
           } else {
             const td = Parchment.find(tr.domNode.children[index]);
             if (td) {
+              // manage merged cells
+              if (td.domNode.previousSibling) {
+                let merge_id = td.domNode.previousSibling.getAttribute('merge_id');
+                const _colSpan = Number.parseInt(td.domNode.previousSibling.getAttribute('colspan') || 1);
+                if (_colSpan > 1) {
+                  merge_id = td.domNode.previousSibling.getAttribute('cell_id');
+                }
+
+                if (merge_id) {
+                  new_td.domNode.setAttribute('merge_id', merge_id);
+                  if (managed_merged_cells.indexOf(merge_id) === -1) {
+                    managed_merged_cells.push(merge_id);
+                    const _cell = table.domNode.querySelector('td[cell_id="' + merge_id + '"]');
+                    if (_cell) {
+                      const colSpan = Number.parseInt(_cell.getAttribute('colspan'));
+                      _cell.setAttribute('colspan', colSpan + 1);
+                      TableHistory.register('propertyChange', { node: _cell, property: 'colspan', oldValue: colSpan, newValue: colSpan + 1 });
+                    }
+                  }
+                }
+              }
               tr.insertBefore(new_td, td);
               TableHistory.register('insert', { node: new_td.domNode, nextNode: td.domNode });
             }
@@ -118,8 +154,9 @@ export default class TableTrick {
     }
   }
 
-  static addRow(quill) {
-    // append row below current cell or at bottommost cell of selection
+  static addRow(quill, direction = 'after') {
+    // direction = before: append row above current cell or above topmost cell of selection
+    // direction = after: append row below current cell or below bottommost cell of selection
     const coords = TableSelection.getSelectionCoords();
     let td = TableTrick.find_td(quill);
     if (coords) {
@@ -135,20 +172,59 @@ export default class TableTrick {
       const table = tr.parent;
       const new_row = tr.clone();
       // get row index
-      let index = Array.prototype.indexOf.call(table.domNode.children, tr.domNode) + 1;
+      let index = Array.prototype.indexOf.call(table.domNode.children, tr.domNode) + (direction === 'before' ? 0 : 1);
 
+      let manage_merged_cells = true;
       const rowSpan = Number.parseInt(td.domNode.getAttribute('rowspan') || 1);
       if (rowSpan > 1) {
-        // add row below merged cell
-        index += rowSpan - 1;
+        manage_merged_cells = false;
+        if (direction !== 'before') {
+          // add row below merged cell
+          index += rowSpan - 1;
+        }
       }
 
       const table_id = table.domNode.getAttribute('table_id');
       const row_id = TableTrick.random_id();
       new_row.domNode.setAttribute('row_id', row_id);
-      for (let i = col_count - 1; i >= 0; i--) {
+      let managed_merged_cells = [];
+      let managed_unmerged_cells = [];
+
+      for (let i = 0; i < col_count; i++) {
+        const prev_cell = tr.domNode.children[i];
         const cell_id = TableTrick.random_id();
         const td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
+        if (prev_cell && manage_merged_cells) {
+          // manage merged cells
+          let merge_id, merged_cell;
+          if (prev_cell.getAttribute('rowspan')) {
+            merge_id = prev_cell.getAttribute('cell_id');
+            merged_cell = prev_cell;
+            if (direction === 'before') {
+              // do not merge cells if we add a row before a merged cell
+              if (managed_unmerged_cells.indexOf(merge_id) === -1) {
+                managed_unmerged_cells.push(merge_id);
+              }
+            }
+          } else if (prev_cell.getAttribute('merge_id')) {
+            merge_id = prev_cell.getAttribute('merge_id');
+            merged_cell = table.domNode.querySelector('td[cell_id="' + merge_id + '"]');
+          }
+
+          if (merge_id && merged_cell && managed_unmerged_cells.indexOf(merge_id) === -1 && merged_cell.getAttribute('rowspan')) {
+            // merge cells of the new row according to previous row
+            let merge_rowspan = Number.parseInt(merged_cell.getAttribute('rowspan'));
+            if (merge_rowspan > 1) {
+              if (managed_merged_cells.indexOf(merge_id) === -1) {
+                managed_merged_cells.push(merge_id);
+                merged_cell.setAttribute('rowspan', merge_rowspan + 1);
+                TableHistory.register('propertyChange', { node: merged_cell, property: 'rowspan', oldValue: merge_rowspan, newValue: merge_rowspan + 1 });
+              }
+              td.domNode.setAttribute('merge_id', merge_id);
+            }
+          }
+        }
+
         new_row.appendChild(td);
         const p = Parchment.create('block');
         td.appendChild(p);
@@ -226,11 +302,13 @@ export default class TableTrick {
     TableSelection.resetSelection(quill.container);
 
     const manageMergedCells = (tr) => {
-      [...tr.children].forEach(function (td) {
+      let managed_merged_cells = [];
+      [...tr.children].forEach(function(td) {
         const merge_id = td.getAttribute('merge_id');
-        if (merge_id) {
+        if (merge_id && managed_merged_cells.indexOf(merge_id) === -1) {
           // if a cell is merged to another cell, get target cell and decrement rowspan
           const cell = tr.parentNode.querySelector(`td[cell_id="${merge_id}"]`);
+          managed_merged_cells.push(merge_id);
           if (cell) {
             const rowSpan = Number.parseInt(cell.getAttribute('rowspan'));
             cell.setAttribute('rowspan', rowSpan - 1);
@@ -327,7 +405,7 @@ export default class TableTrick {
               } else {
                 // other cells that will be merged
                 let _oldContent = cell.innerHTML;
-                cell.textContent = '';
+                cell.innerHTML = '<p><br></p>';
                 cell.setAttribute('merge_id', cell_id);
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: cell.innerHTML });
@@ -422,14 +500,23 @@ export default class TableTrick {
     }
   }
 
-  static _removeCell(cell) {
-    const cell_id = cell.getAttribute('cell_id');
+  static _removeCell(cell, recursive = true) {
+    let cell_id = cell.getAttribute('cell_id');
     if (cell.nodeName === 'TD') {
-      if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
-        // remove merged cells
-        cell.parentNode.parentNode.querySelectorAll(`td[merge_id="${cell_id}"`).forEach(node => {
-          TableTrick._removeCell(node);
-        });
+      if (recursive) {
+        if (cell.getAttribute('merge_id')) {
+          // remove merged cells
+          cell = cell.closest('table').querySelector('td[cell_id="' + cell.getAttribute('merge_id') + '"]');
+          if (!cell) return false;
+          cell_id = cell.getAttribute('cell_id');
+        }
+
+        if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
+          // remove merged cells
+          cell.parentNode.parentNode.querySelectorAll(`td[merge_id="${cell_id}"`).forEach(node => {
+            TableTrick._removeCell(node, false);
+          });
+        }
       }
 
       let node = cell;
@@ -483,15 +570,22 @@ export default class TableTrick {
       const col_count = Number.parseInt(sizes[2]);
       TableTrick.insertTable(quill, col_count, row_count);
     } else {
+      let append_direction = 'after';
       switch (value) {
+        case 'append-col-before':
+          append_direction = 'before';
         case 'append-col':
-          TableTrick.addCol(quill);
+        case 'append-col-after':
+          TableTrick.addCol(quill, append_direction);
           break;
         case 'remove-col':
           TableTrick.removeCol(quill);
           break;
+        case 'append-row-above':
+          append_direction = 'before';
         case 'append-row':
-          TableTrick.addRow(quill);
+        case 'append-row-below':
+          TableTrick.addRow(quill, append_direction);
           break;
         case 'remove-row':
           TableTrick.removeRow(quill);

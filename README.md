@@ -1,6 +1,6 @@
-# QuillJS table
+# QuillJS Table (quill1-table)
 
-Test lab for creating `TABLE` functionality in QuillJS using Containers.
+`TABLE` functionality in QuillJS (v1) using Containers.
 
 Code of quill is included in project so we can easily play with it in our tests.
 
@@ -12,11 +12,14 @@ Code of quill is included in project so we can easily play with it in our tests.
 * select a cell or multiple cells
 * split/merge cell feature
 * remove cell/selection feature
+* copy/paste a table and managed merged cells
+* add col/row before/after
 
 ## What would be nice to add/fix
 
 * hide actions in toolbar if they cannot be executed (ex: adding a row outside a table) / provide a check method
 * improve text-change event (in some cases we have to force triggering the event with null values)
+* copy table selection to clipboard
 
 ## Usage
 
@@ -24,50 +27,64 @@ see example [demo.js](../master/src/demo.js)
 
 ```
 // import module
-import TableModule from "quill1-table";
+import TableModule from 'quill1-table';
 
 // register module
-Quill.register("modules/table", TableModule);
+Quill.register('modules/table', TableModule);
 
 // add toolbar controls in Toolbar module options
 [
-        {
-            table: TableModule.tableOptions()
-        },
-        {
-            table: ["append-row", "append-col", "remove-col", "remove-row", "remove-table", "split-cell", "merge-selection", "remove-cell", "remove-selection", "undo", "redo"]
-        }
+  {
+    table: TableModule.tableOptions()
+  },
+  {
+    table: [
+      'insert',
+      'append-row-above',
+      'append-row-below',
+      'append-col-before',
+      'append-col-after',
+      'remove-col',
+      'remove-row',
+      'remove-table',
+      'split-cell',
+      'merge-selection',
+      'remove-cell',
+      'remove-selection',
+      'undo',
+      'redo'
+    ]
+  }
 ]
 
 // add keyboard bindings in Keyboard options
-
 keyboard: {
-            bindings: {
-                backspace: {
-                    key: "backspace",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("backspace", range, keycontext)
-                },
-                delete: {
-                    key: "delete",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("delete", range, keycontext)
-                },
-                undo: {
-                    ctrlKey: true,
-                    key: "z",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("undo", range, keycontext)
-                },
-                redo: {
-                    ctrlKey: true,
-                    shiftKey: true,
-                    key: "z",
-                    handler: (range, keycontext) =>
-                        TableModule.keyboardHandler("redo", range, keycontext)
-                }
-            }
-        }
+  bindings: {
+    backspace: {
+      key: 'backspace',
+      handler: (range, keycontext) =>
+        TableModule.keyboardHandler('backspace', range, keycontext)
+    },
+    delete: {
+      key: 'delete',
+      handler: (range, keycontext) =>
+        TableModule.keyboardHandler('delete', range, keycontext)
+    },
+    undo: {
+      ctrlKey: true,
+      key: 'z',
+      handler: (range, keycontext) =>
+        TableModule.keyboardHandler('undo', range, keycontext)
+    },
+    redo: {
+      ctrlKey: true,
+      shiftKey: true,
+      key: 'z',
+      handler: (range, keycontext) =>
+        TableModule.keyboardHandler('redo', range, keycontext)
+    }
+  }
+}
 ```
 
 ### For development
@@ -85,11 +102,7 @@ npm run build
 * it is possible to copy & paste table from Word. Works ok. Needs to test edge cases.
 * undo/redo. Needs to test edge cases.
 * select a cell or multiple cells
-
-### Known issues
-It is early stage so there is a lot of issues with current state.
-Still there are some worth to mention which should be dealt with.
-
-* Lists (number or bullet) in cell upon enter loose list format on previous line but keeps it on actual.
-* Containers need order similar to Inline.order. Otherwise delta is not canonical.
-* ...
+* split/merge cell feature
+* remove cell/selection feature
+* copy/paste a table and managed merged cells
+* add col/row before/after

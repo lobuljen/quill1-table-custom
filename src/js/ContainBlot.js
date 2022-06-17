@@ -6,16 +6,16 @@ let BlockEmbed = Quill.import('blots/block/embed');
 let Parchment = Quill.import('parchment');
 
 class ContainBlot extends Container {
-    static create(value) {
-        return super.create(value);
-    }
+  static create(value) {
+    return super.create(value);
+  }
 
-    formats(domNode) {
-        if (domNode) {
-            return domNode.tagName;
-        }
-        return this.domNode.tagName;
+  formats(domNode) {
+    if (domNode) {
+      return domNode.tagName;
     }
+    return this.domNode.tagName;
+  }
 }
 
 ContainBlot.blotName = 'contain';
