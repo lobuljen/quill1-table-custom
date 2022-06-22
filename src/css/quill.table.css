@@ -11,7 +11,7 @@
   padding: 2px 5px;
   height: 25px;
   vertical-align: top;
-  white-space: normal;
+  white-space: pre-wrap; /* https://github.com/quilljs/quill/issues/1760 */
 }
 
 .ql-editor table td[rowspan="2"] {
