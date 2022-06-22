@@ -397,9 +397,6 @@ export default class TableTrick {
               if (!node) {
                 // first cell (this cell will be kept)
                 cell_id = cell.getAttribute('cell_id');
-                // set colspan and rowspan attributes
-                cell.setAttribute('colspan', colSpan);
-                cell.setAttribute('rowspan', rowSpan);
                 node = cell;
                 oldContent = node.innerHTML;
               } else {
@@ -410,11 +407,20 @@ export default class TableTrick {
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: cell.innerHTML });
               }
+
+              if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
+                // cannot merge cell already merged
+                alert('Cannot merge already merged cell');
+                return false;
+              }
             }
           }
         }
 
         if (node && mergedNodes.length) {
+          // set colspan and rowspan attributes
+          node.setAttribute('colspan', colSpan);
+          node.setAttribute('rowspan', rowSpan);
           // set merged content
           node.innerHTML = mergedCellContent.join('');
         }
