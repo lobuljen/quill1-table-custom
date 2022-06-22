@@ -402,10 +402,8 @@ export default class TableTrick {
               } else {
                 // other cells that will be merged
                 let _oldContent = cell.innerHTML;
-                cell.innerHTML = '<p><br></p>';
-                cell.setAttribute('merge_id', cell_id);
                 // update mergedNodes array for history purposes
-                mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: cell.innerHTML });
+                mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: '<p><br></p>' });
               }
 
               if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
@@ -418,6 +416,11 @@ export default class TableTrick {
         }
 
         if (node && mergedNodes.length) {
+          mergedNodes.forEach(mergedNode => {
+            mergedNode.node.setAttribute('merge_id', cell_id);
+            mergedNode.node.innerHTML = mergedNode.newContent;
+          });
+
           // set colspan and rowspan attributes
           node.setAttribute('colspan', colSpan);
           node.setAttribute('rowspan', rowSpan);
