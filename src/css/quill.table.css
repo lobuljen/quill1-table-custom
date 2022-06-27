@@ -179,6 +179,14 @@
   margin: 1px;
 }
 
+.ql-toolbar .ql-picker.ql-table .ql-picker-item {
+  display: none;
+}
+
+.ql-toolbar .ql-picker.ql-table .ql-picker-item.enabled {
+  display: block;
+}
+
 .ql-picker.ql-table:nth-of-type(2) {
   display: flex;
   width: 145px;

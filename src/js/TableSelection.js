@@ -1,8 +1,13 @@
+import TableToolbar from './TableToolbar';
+import TableTrick from './TableTrick';
+
 class TableSelection {
   static focusedCell = null;
   static isMouseDown = false;
   static selectionStartElement = null;
   static selectionEndElement = null;
+  static previousSelection = [];
+  static isInTable = false;
 
   static dblClickTimeout = null;
   static clickedCellTimeout = null;
@@ -16,6 +21,7 @@ class TableSelection {
 
     TableSelection.isMouseDown = true;
     // reset cell selection
+    TableSelection.previousSelection = [TableSelection.selectionStartElement, TableSelection.selectionEndElement];
     TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
     TableSelection.resetSelection(e.currentTarget);
 
@@ -80,6 +86,64 @@ class TableSelection {
     TableSelection.isMouseDown = false;
     if (!TableSelection.selectionEndElement) {
       TableSelection.selectionEndElement = TableSelection.selectionStartElement;
+    }
+
+    if (
+      TableSelection.previousSelection[0] !== TableSelection.selectionStartElement &&
+      TableSelection.previousSelection[1] !== TableSelection.selectionEndElement
+    ) {
+      TableSelection.selectionChange();
+    }
+  }
+
+  static selectionChange(range = null, oldRange = null) {
+    let isInTable = false;
+    if (TableSelection.selectionStartElement || TableSelection.selectionEndElement) {
+      // there is a table selection
+      isInTable = true;
+      TableToolbar.enable(quill, ['split-cell', 'merge-selection', 'remove-selection']);
+    } else {
+      // Text selection
+      TableToolbar.disable(quill, ['split-cell', 'merge-selection', 'remove-selection']);
+      let selectionStartElement, selectionEndElement;
+      if (range === null && oldRange !== null) {
+        // There is a previous Quill selection but editor is no longer focused (selection-change event)
+        const [startLeaf] = quill.getLeaf(oldRange.index);
+        const [endLeaf] = quill.getLeaf(oldRange.index + oldRange.length);
+        selectionStartElement = startLeaf.parent.domNode;
+        selectionEndElement = endLeaf.parent.domNode;
+      } else {
+        // No Quill selection, use window.getSelection instead
+        const selection = window.getSelection();
+        selectionStartElement = selection.anchorNode ? (selection.anchorNode.nodeType === Node.TEXT_NODE ? selection.anchorNode.parentElement : selection.anchorNode) : null;
+        selectionEndElement = selection.focusNode ? (selection.focusNode.nodeType === Node.TEXT_NODE ? selection.focusNode.parentElement : selection.focusNode) : null;
+      }
+
+      if (selectionStartElement && selectionEndElement) {
+        // there is a text selection
+        let closestTable = selectionStartElement.closest('table');
+        if (closestTable && closestTable.closest('.ql-editor')) {
+          if (selectionEndElement !== selectionStartElement) {
+            closestTable = selectionEndElement.closest('table');
+            isInTable = closestTable && closestTable.closest('.ql-editor');
+          } else {
+            isInTable = true;
+          }
+        }
+      } // no selection = not in table
+    }
+
+    if (!isInTable && TableSelection.isInTable) {
+      // disable
+      TableSelection.isInTable = false;
+      TableToolbar.disableAll(quill);
+      TableToolbar.enable(quill, ['newtable_*', 'insert', 'undo', 'redo']);
+    }
+
+    if (isInTable && !TableSelection.isInTable) {
+      // enable
+      TableSelection.isInTable = true;
+      TableToolbar.enable(quill, ['append-row*', 'append-col*', 'remove-cell', 'remove-row', 'remove-col', 'remove-table']);
     }
   }
 

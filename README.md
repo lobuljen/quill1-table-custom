@@ -17,7 +17,6 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 ## What would be nice to add/fix
 
-* hide actions in toolbar if they cannot be executed (ex: adding a row outside a table) / provide a check method
 * improve text-change event (in some cases we have to force triggering the event with null values)
 * copy table selection to clipboard
 

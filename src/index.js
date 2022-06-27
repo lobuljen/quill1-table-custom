@@ -7,6 +7,7 @@ import Table from './js/TableBlot';
 import Contain from './js/ContainBlot';
 import TableTrick from './js/TableTrick';
 import TableSelection from './js/TableSelection';
+import TableToolbar from './js/TableToolbar';
 import './css/quill.table.css';
 
 let Container = Quill.import('blots/container');
@@ -43,6 +44,7 @@ export default class TableModule {
     quill.container.addEventListener('mousedown', TableSelection.mouseDown);
     quill.container.addEventListener('mousemove', TableSelection.mouseMove);
     quill.container.addEventListener('mouseup', TableSelection.mouseUp);
+    quill.on('selection-change', (range, oldRange) => TableSelection.selectionChange(range, oldRange));
 
     const toolbar = quill.getModule('toolbar');
     toolbar.addHandler('table', function (value) {
@@ -99,6 +101,8 @@ export default class TableModule {
         ].join('|')
       }));
     });
+
+    TableToolbar.enable(quill, ['newtable_*', 'insert', 'undo', 'redo']);
   }
 
   static tableOptions() {
