@@ -17,7 +17,6 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 ## What would be nice to add/fix
 
-* improve text-change event (in some cases we have to force triggering the event with null values)
 * copy table selection to clipboard
 
 ## Usage

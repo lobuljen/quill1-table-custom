@@ -175,8 +175,6 @@ export default class TableModule {
         });
 
         if (nodeRemoved) {
-          // force triggering text-change event (TODO: improve)
-          quill.emitter.emit('text-change', null, null, 'user');
           TableHistory.add(quill);
         }
 

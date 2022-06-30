@@ -259,10 +259,10 @@ export default class TableTrick {
     } else {
       // otherwise, remove only the column of current cell
       colsToRemove = 1;
-      const td = TableTrick.find_td(quill);
-      if (td) {
-        table = td.parent.parent;
-        colIndex = Array.prototype.indexOf.call(td.parent.domNode.children, td.domNode);
+      const currentCell = TableTrick.find_td(quill);
+      if (currentCell) {
+        table = currentCell.parent.parent;
+        colIndex = Array.prototype.indexOf.call(currentCell.parent.domNode.children, currentCell.domNode);
       }
     }
 
@@ -270,9 +270,9 @@ export default class TableTrick {
       // Remove all TDs with the colIndex and repeat it colsToRemove times if there are multiple columns to delete
       for (let i = 0; i < colsToRemove; i++) {
         table.children.forEach(function (tr) {
-          const _td = tr.domNode.children[colIndex];
-          if (_td) {
-            const merge_id = _td.getAttribute('merge_id');
+          const td = tr.domNode.children[colIndex];
+          if (td) {
+            const merge_id = td.getAttribute('merge_id');
             if (merge_id) {
               // if a cell is merged to another cell, get target cell and decrement colspan
               const cell = table.domNode.querySelector(`td[cell_id="${merge_id}"]`);
@@ -283,12 +283,15 @@ export default class TableTrick {
               }
             }
 
-            if (_td.getAttribute('colspan')) {
-              TableTrick._split(_td);
+            if (td.getAttribute('colspan')) {
+              TableTrick._split(td);
             }
 
-            TableHistory.register('remove', { node: _td, nextNode: _td.nextSibling, parentNode: tr.domNode });
-            _td.remove();
+            TableHistory.register('remove', { node: td, nextNode: td.nextSibling, parentNode: tr.domNode });
+            const _td = Parchment.find(td);
+            if (_td) { // remove node this way in order to update delta
+              _td.remove();
+            }
           }
         });
       }
@@ -329,11 +332,14 @@ export default class TableTrick {
       const rowsToRemove = coords.maxY - coords.minY + 1;
 
       for (let i = 0; i < rowsToRemove; i++) {
-        const _tr = table.children[rowIndex];
-        if (_tr) {
-          manageMergedCells(_tr);
-          TableHistory.register('remove', { node: _tr, nextNode: _tr.nextSibling, parentNode: table });
-          _tr.remove();
+        const tr = table.children[rowIndex];
+        if (tr) {
+          manageMergedCells(tr);
+          TableHistory.register('remove', { node: tr, nextNode: tr.nextSibling, parentNode: table });
+          const _tr = Parchment.find(tr);
+          if (_tr) { // remove node this way in order to update delta
+            _tr.remove();
+          }
         }
       }
     } else {
@@ -343,7 +349,10 @@ export default class TableTrick {
         const tr = td.parent;
         manageMergedCells(tr.domNode);
         TableHistory.register('remove', { node: tr.domNode, nextNode: tr.next ? tr.next.domNode : null, parentNode: tr.parent.domNode });
-        tr.remove();
+        const _tr = Parchment.find(tr);
+        if (_tr) { // remove node this way in order to update delta
+          _tr.remove();
+        }
       }
     }
     TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
@@ -360,12 +369,13 @@ export default class TableTrick {
       td = Parchment.find(_td);
     }
 
+    const oldDelta = quill.getContents();
     if (td && TableTrick._split(td.domNode)) {
       // add changes to history
       // TableTrick._split already register 'split' change to history
       TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-      // force triggering text-change event (TODO: improve)
-      quill.emitter.emit('text-change', null, null, 'user');
+      // force triggering text-change event
+      TableTrick.emitTextChange(quill, oldDelta);
       TableHistory.add(quill);
     }
   }
@@ -430,8 +440,6 @@ export default class TableTrick {
         // add changes to history
         TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
         TableHistory.register('merge', { node, mergedNodes, colSpan, rowSpan, oldContent, newContent: node.innerHTML });
-        // force triggering text-change event (TODO: improve)
-        quill.emitter.emit('text-change', null, null, 'user');
         TableHistory.add(quill);
       }
     }
@@ -451,8 +459,6 @@ export default class TableTrick {
       // add changes to history
       // TableTrick._removeCell already register 'remove' change to history
       TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-      // force triggering text-change event (TODO: improve)
-      quill.emitter.emit('text-change', null, null, 'user');
       TableHistory.add(quill);
     }
   }
@@ -498,13 +504,14 @@ export default class TableTrick {
       }
 
       nodesToRemove.forEach(node => {
-        node.remove();
+        const _node = Parchment.find(node);
+        if (_node) { // remove node this way in order to update delta
+          _node.remove();
+        }
       });
 
       // add changes to history
       TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-      // force triggering text-change event (TODO: improve)
-      quill.emitter.emit('text-change', null, null, 'user');
       TableHistory.add(quill);
     }
   }
@@ -543,7 +550,12 @@ export default class TableTrick {
           parentNode = node.parentNode;
         }
       }
-      node.remove();
+
+      const _node = Parchment.find(node);
+      if (_node) { // remove node this way in order to update delta
+        _node.remove();
+      }
+
       TableHistory.register('remove', { node, nextNode, parentNode });
       return true;
     }
@@ -570,6 +582,11 @@ export default class TableTrick {
       return true;
     }
     return false;
+  }
+
+  static emitTextChange(quill, oldDelta, source = 'user') {
+    const newDelta = quill.getContents();
+    quill.emitter.emit('text-change', oldDelta.diff(newDelta), oldDelta, source);
   }
 
   static table_handler(value, quill) {

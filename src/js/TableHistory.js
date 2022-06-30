@@ -41,6 +41,7 @@ class TableHistory {
     if (typeof entry !== 'undefined') {
       // apply changes from last change to first change (undo)
       entry.reverse().forEach(change => {
+        const oldDelta = quill.getContents();
         switch (change.type) {
           case 'insert':
             // remove node (undo)
@@ -53,14 +54,12 @@ class TableHistory {
           case 'split':
             // merge cell (redo)
             TableHistory.merge(change, true);
-            // force triggering text-change event (TODO: improve)
-            quill.emitter.emit('text-change', null, null, 'user');
+            // force triggering text-change event
+            TableTrick.emitTextChange(quill, oldDelta);
             break;
           case 'merge':
             // split cell (redo)
             TableHistory.split(change, true);
-            // force triggering text-change event (TODO: improve)
-            quill.emitter.emit('text-change', null, null, 'user');
             break;
           case 'propertyChange':
             // property change (undo)
