@@ -1,5 +1,4 @@
 import TableToolbar from './TableToolbar';
-import TableTrick from './TableTrick';
 
 class TableSelection {
   static focusedCell = null;
@@ -7,13 +6,12 @@ class TableSelection {
   static selectionStartElement = null;
   static selectionEndElement = null;
   static previousSelection = [];
-  static isInTable = false;
 
   static dblClickTimeout = null;
   static clickedCellTimeout = null;
   static preventMouseDown = true;
 
-  static mouseDown(e) {
+  static mouseDown(quill, e) {
     if (e.which !== 1) {
       // do nothing with center or right click
       return;
@@ -23,7 +21,7 @@ class TableSelection {
     // reset cell selection
     TableSelection.previousSelection = [TableSelection.selectionStartElement, TableSelection.selectionEndElement];
     TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-    TableSelection.resetSelection(e.currentTarget);
+    TableSelection.resetSelection();
 
     const targetCell = TableSelection.getTargetCell(e);
     if (!targetCell) {
@@ -56,7 +54,7 @@ class TableSelection {
     }
   }
 
-  static mouseMove(e) {
+  static mouseMove(quill, e) {
     if (TableSelection.isMouseDown && TableSelection.selectionStartElement) {
       const previousSelectionEndElement = TableSelection.selectionEndElement;
       TableSelection.selectionEndElement = TableSelection.getTargetCell(e);
@@ -66,7 +64,7 @@ class TableSelection {
         TableSelection.selectionEndElement !== previousSelectionEndElement &&
         TableSelection.selectionStartElement.closest('table') === TableSelection.selectionEndElement.closest('table')
       ) {
-        TableSelection.resetSelection(e.currentTarget);
+        TableSelection.resetSelection();
 
         // set new selection
         const coords = TableSelection.getSelectionCoords();
@@ -82,7 +80,7 @@ class TableSelection {
     }
   }
 
-  static mouseUp(e) {
+  static mouseUp(quill, e) {
     TableSelection.isMouseDown = false;
     if (!TableSelection.selectionEndElement) {
       TableSelection.selectionEndElement = TableSelection.selectionStartElement;
@@ -92,11 +90,11 @@ class TableSelection {
       TableSelection.previousSelection[0] !== TableSelection.selectionStartElement &&
       TableSelection.previousSelection[1] !== TableSelection.selectionEndElement
     ) {
-      TableSelection.selectionChange();
+      TableSelection.selectionChange(quill);
     }
   }
 
-  static selectionChange(range = null, oldRange = null) {
+  static selectionChange(quill, range = null, oldRange = null) {
     let isInTable = false;
     if (TableSelection.selectionStartElement || TableSelection.selectionEndElement) {
       // there is a table selection
@@ -133,16 +131,16 @@ class TableSelection {
       } // no selection = not in table
     }
 
-    if (!isInTable && TableSelection.isInTable) {
+    if (!isInTable && quill.table.isInTable) {
       // disable
-      TableSelection.isInTable = false;
+      quill.table.isInTable = false;
       TableToolbar.disableAll(quill);
       TableToolbar.enable(quill, ['newtable_*', 'insert', 'undo', 'redo']);
     }
 
-    if (isInTable && !TableSelection.isInTable) {
+    if (isInTable && !quill.table.isInTable) {
       // enable
-      TableSelection.isInTable = true;
+      quill.table.isInTable = true;
       TableToolbar.enable(quill, ['append-row*', 'append-col*', 'remove-cell', 'remove-row', 'remove-col', 'remove-table']);
     }
   }
@@ -195,7 +193,8 @@ class TableSelection {
   }
 
   static resetSelection(container) {
-    container.querySelectorAll('td.ql-cell-selected').forEach(cell => {
+    // reset selection for all instances
+    document.querySelectorAll('.ql-editor td.ql-cell-selected').forEach(cell => {
       cell.classList.remove('ql-cell-selected');
     });
   }

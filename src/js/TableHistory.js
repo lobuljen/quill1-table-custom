@@ -33,7 +33,7 @@ class TableHistory {
     }, 0);
   }
 
-  static undo(id) {
+  static undo(quill, id) {
     const historyChangeStatus = quill.history.ignoreChange;
     quill.history.ignoreChange = true;
 
@@ -78,7 +78,7 @@ class TableHistory {
     }, 0);
   }
 
-  static redo(id) {
+  static redo(quill, id) {
     const historyChangeStatus = quill.history.ignoreChange;
     quill.history.ignoreChange = true;
 

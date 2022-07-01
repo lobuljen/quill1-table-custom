@@ -18,6 +18,8 @@ class Table extends ContainBlot {
 
   optimize(context) {
     super.optimize(context);
+    let quill = TableTrick.getQuill(this.domNode);
+    if (!quill) return;
     let next = this.next;
     const table_id = this.domNode.getAttribute('table_id');
 
@@ -30,11 +32,10 @@ class Table extends ContainBlot {
       next.remove();
     }
 
-    let quill = window.quill;
     if (
-      typeof quill.history.tables[table_id] !== 'undefined' &&
-      quill.history.tables[table_id].cell_counter === this.domNode.querySelectorAll('td').length &&
-      quill.history.tables[table_id].row_counter === this.domNode.querySelectorAll('tr').length
+      typeof quill.table.tables[table_id] !== 'undefined' &&
+      quill.table.tables[table_id].cell_counter === this.domNode.querySelectorAll('td').length &&
+      quill.table.tables[table_id].row_counter === this.domNode.querySelectorAll('tr').length
     ) {
       // our table is fully initialized, we can do more optimizations
 
@@ -71,14 +72,14 @@ class Table extends ContainBlot {
         }
       });
 
-      if (quill.history.tables[table_id].pasted) {
+      if (quill.table.tables[table_id].pasted) {
         // add to history
         TableHistory.register('insert', { node: this.domNode, nextNode: this.domNode.nextSibling, parentNode: this.domNode.parentNode });
         TableHistory.add(quill);
       }
 
       // delete entry for optimizing only once
-      delete quill.history.tables[table_id];
+      delete quill.table.tables[table_id];
     }
   }
 

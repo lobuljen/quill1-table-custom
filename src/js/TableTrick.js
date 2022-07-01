@@ -30,6 +30,26 @@ export default class TableTrick {
     return blot; // return TD or NULL
   }
 
+  static getQuill(el) {
+    // Get Quill instance from node/element or blot
+    let quill = null;
+    if (el instanceof Node) {
+      if (!el instanceof Element) {
+        el = el.parentElement;
+      }
+    } else if (typeof el === 'object' && typeof el.domNode !== 'undefined') {
+      el = el.domNode;
+    }
+
+    if (el instanceof Element) {
+      const editorNode = el.closest('.ql-container');
+      if (editorNode) {
+        quill = Quill.find(editorNode);
+      }
+    }
+    return quill;
+  }
+
   static insertTable(quill, col_count, row_count) {
     const table_id = TableTrick.random_id();
     const table = Parchment.create('table', table_id);
@@ -590,6 +610,15 @@ export default class TableTrick {
   }
 
   static table_handler(value, quill) {
+    // Check if the selection is for the same Quill instance, otherwise reset selection
+    if (
+      (TableSelection.selectionStartElement && !quill.container.contains(TableSelection.selectionStartElement)) ||
+      (TableSelection.selectionEndElement && !quill.container.contains(TableSelection.selectionEndElement))
+    ) {
+      TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+      TableSelection.resetSelection();
+    }
+
     if (value.includes('newtable_')) {
       const sizes = value.split('_');
       const row_count = Number.parseInt(sizes[1]);
@@ -639,7 +668,7 @@ export default class TableTrick {
             const entry = quill.history.stack.undo[quill.history.stack.undo.length - 1];
             if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
               // Table history entry
-              TableHistory.undo(entry.id);
+              TableHistory.undo(quill, entry.id);
               return false;
             }
             // Classic history entry
@@ -650,7 +679,7 @@ export default class TableTrick {
             const entry = quill.history.stack.redo[quill.history.stack.redo.length - 1];
             if (typeof entry.type !== 'undefined' && typeof entry.id !== 'undefined' && entry.type === 'tableHistory') {
               // Table history entry
-              TableHistory.redo(entry.id);
+              TableHistory.redo(quill, entry.id);
               return false;
             }
             // Classic history entry

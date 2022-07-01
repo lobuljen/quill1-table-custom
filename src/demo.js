@@ -61,26 +61,30 @@ const quill = new Quill(document.getElementById('quillContainer'), {
       bindings: {
         backspace: {
           key: 'backspace',
-          handler: (range, keycontext) =>
-            TableModule.keyboardHandler('backspace', range, keycontext)
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'backspace', range, keycontext);
+          }
         },
         delete: {
           key: 'delete',
-          handler: (range, keycontext) =>
-            TableModule.keyboardHandler('delete', range, keycontext)
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'delete', range, keycontext);
+          }
         },
         undo: {
           ctrlKey: true,
           key: 'z',
-          handler: (range, keycontext) =>
-            TableModule.keyboardHandler('undo', range, keycontext)
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'undo', range, keycontext);
+          }
         },
         redo: {
           ctrlKey: true,
           shiftKey: true,
           key: 'z',
-          handler: (range, keycontext) =>
-            TableModule.keyboardHandler('redo', range, keycontext)
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'redo', range, keycontext);
+          }
         }
       }
     }

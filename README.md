@@ -57,29 +57,34 @@ Quill.register('modules/table', TableModule);
 
 // add keyboard bindings in Keyboard options
 keyboard: {
+  // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
   bindings: {
     backspace: {
       key: 'backspace',
-      handler: (range, keycontext) =>
-        TableModule.keyboardHandler('backspace', range, keycontext)
+      handler: function (range, keycontext) {
+        return TableModule.keyboardHandler(this.quill, 'backspace', range, keycontext);
+      }
     },
     delete: {
       key: 'delete',
-      handler: (range, keycontext) =>
-        TableModule.keyboardHandler('delete', range, keycontext)
+      handler: function (range, keycontext) {
+        return TableModule.keyboardHandler(this.quill, 'delete', range, keycontext);
+      }
     },
     undo: {
       ctrlKey: true,
       key: 'z',
-      handler: (range, keycontext) =>
-        TableModule.keyboardHandler('undo', range, keycontext)
+      handler: function (range, keycontext) {
+        return TableModule.keyboardHandler(this.quill, 'undo', range, keycontext);
+      }
     },
     redo: {
       ctrlKey: true,
       shiftKey: true,
       key: 'z',
-      handler: (range, keycontext) =>
-        TableModule.keyboardHandler('redo', range, keycontext)
+      handler: function (range, keycontext) {
+        return TableModule.keyboardHandler(this.quill, 'redo', range, keycontext);
+      }
     }
   }
 }

@@ -36,15 +36,17 @@ export default class TableModule {
   }
 
   constructor(quill, options) {
-    window.quill = window.quill || quill;
     quill.history.tableStack = {};
-    quill.history.tables = {};
+    quill.table = {
+      isInTable: false,
+      tables: {}
+    };
 
     // selection mouse events
-    quill.container.addEventListener('mousedown', TableSelection.mouseDown);
-    quill.container.addEventListener('mousemove', TableSelection.mouseMove);
-    quill.container.addEventListener('mouseup', TableSelection.mouseUp);
-    quill.on('selection-change', (range, oldRange) => TableSelection.selectionChange(range, oldRange));
+    quill.container.addEventListener('mousedown', (e) => TableSelection.mouseDown(quill, e));
+    quill.container.addEventListener('mousemove', (e) => TableSelection.mouseMove(quill, e));
+    quill.container.addEventListener('mouseup', (e) => TableSelection.mouseUp(quill, e));
+    quill.on('selection-change', (range, oldRange) => TableSelection.selectionChange(quill, range, oldRange));
 
     const toolbar = quill.getModule('toolbar');
     toolbar.addHandler('table', function (value) {
@@ -56,7 +58,7 @@ export default class TableModule {
       const is_pasted_data = node.closest('.ql-editor') === null;
       const table_id = node.getAttribute('table_id');
       if (table_id) {
-        quill.history.tables[table_id] = {
+        quill.table.tables[table_id] = {
           pasted: is_pasted_data,
           row_counter: node.querySelectorAll('tr').length,
           cell_counter: node.querySelectorAll('td').length
@@ -123,8 +125,7 @@ export default class TableModule {
     }
   }
 
-  static keyboardHandler(key, range, keycontext) {
-    const quill = window.quill;
+  static keyboardHandler(quill, key, range, keycontext) {
     const format_start = quill.getFormat(range.index - 1);
     const format_end = quill.getFormat(range.index + range.length);
 
