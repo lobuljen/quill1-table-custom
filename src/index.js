@@ -129,7 +129,7 @@ export default class TableModule {
     const format_start = quill.getFormat(range.index - 1);
     const format_end = quill.getFormat(range.index + range.length);
 
-    if (key === 'undo' || key === 'redo') {
+    if (key === 'undo' || key === 'redo' || key === 'copy') {
       return TableTrick.table_handler(key, quill);
     }
 

@@ -85,6 +85,13 @@ const quill = new Quill(document.getElementById('quillContainer'), {
           handler: function (range, keycontext) {
             return TableModule.keyboardHandler(this.quill, 'redo', range, keycontext);
           }
+        },
+        copy: {
+          ctrlKey: true,
+          key: 'c',
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'copy', range, keycontext);
+          }
         }
       }
     }

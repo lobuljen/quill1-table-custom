@@ -685,6 +685,33 @@ export default class TableTrick {
             // Classic history entry
           }
           return true;
+        case 'copy':
+          if (TableSelection.selectionStartElement && TableSelection.selectionEndElement) {
+            // Copy text in selection
+            // Save previous selection
+            let { anchorNode, anchorOffset, focusNode, focusOffset } = window.getSelection();
+            // Get table selection position
+            // Set selection and copy
+            window.getSelection().removeAllRanges();
+            let range = document.createRange();
+            range.setStart(TableSelection.selectionStartElement, 0);
+            range.setEnd(TableSelection.selectionEndElement, TableSelection.selectionEndElement.childNodes.length);
+            window.getSelection().addRange(range);
+            if (TableSelection.selectionStartElement === TableSelection.selectionEndElement) {
+              TableSelection.selectionStartElement.classList.remove('ql-cell-selected');
+            }
+            document.execCommand('copy');
+            if (TableSelection.selectionStartElement === TableSelection.selectionEndElement) {
+              TableSelection.selectionStartElement.classList.add('ql-cell-selected');
+            }
+            // Remove selection and restore previous selection
+            window.getSelection().removeAllRanges();
+            range.setStart(anchorNode, anchorOffset);
+            range.setEnd(focusNode, focusOffset);
+            window.getSelection().addRange(range);
+            return false;
+          }
+          return true;
       }
     }
   }

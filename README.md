@@ -17,8 +17,6 @@ Code of quill is included in project so we can easily play with it in our tests.
 
 ## What would be nice to add/fix
 
-* copy table selection to clipboard
-
 ## Usage
 
 see example [demo.js](../master/src/demo.js)
