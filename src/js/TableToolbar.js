@@ -12,13 +12,13 @@ export default class TableToolbar {
     if (typeof actions === 'string') actions = [actions];
 
     actions.forEach(action => {
-      let selector = `.ql-table .ql-picker-item[data-value="${action}"]`;
+      let selector = `.ql-table .ql-picker-item[data-value="${action}"], .ql-table[value="${action}"]`;
       if (action.startsWith('*') && action.endsWith('*')) {
-        selector = `.ql-table .ql-picker-item[data-value*="${action.substring(1, action.length - 1)}"]`;
+        selector = `.ql-table .ql-picker-item[data-value*="${action.substring(1, action.length - 1)}"], .ql-table[value*="${action.substring(1, action.length - 1)}"]`;
       } else if (action.startsWith('*')) {
-        selector = `.ql-table .ql-picker-item[data-value$="${action.substring(1)}"]`;
+        selector = `.ql-table .ql-picker-item[data-value$="${action.substring(1)}"], .ql-table[value$="${action.substring(1)}"]`;
       } else if (action.endsWith('*')) {
-        selector = `.ql-table .ql-picker-item[data-value^="${action.substring(0, action.length - 1)}"]`;
+        selector = `.ql-table .ql-picker-item[data-value^="${action.substring(0, action.length - 1)}"], .ql-table[value^="${action.substring(0, action.length - 1)}"]`;
       }
 
       toolbar.querySelectorAll(selector).forEach(item => {
@@ -38,13 +38,13 @@ export default class TableToolbar {
   static disableAll(quill) {
     const toolbar = TableToolbar.get(quill);
     if (!toolbar) return false;
-    toolbar.querySelectorAll('.ql-table .ql-picker-item.enabled').forEach(item => item.classList.remove('enabled'));
+    toolbar.querySelectorAll('.ql-table .ql-picker-item.enabled, .ql-table.enabled[value]').forEach(item => item.classList.remove('enabled'));
   }
 
   static isEnabled(quill, action) {
     const toolbar = TableToolbar.get(quill);
     if (!toolbar) return false;
-    const item = toolbar.querySelector(`.ql-table .ql-picker-item[data-value="${action}"]`);
+    const item = toolbar.querySelector(`.ql-table .ql-picker-item[data-value="${action}"], .ql-table[value="${action}"]`);
     return item && item.classList.contains('enabled');
   }
 }
