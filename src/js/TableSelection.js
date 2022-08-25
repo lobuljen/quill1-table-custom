@@ -2,7 +2,7 @@ import TableToolbar from './TableToolbar';
 
 class TableSelection {
   static focusedCell = null;
-  static isMouseDown = false;
+  static isCtrlMouseDown = false;
   static selectionStartElement = null;
   static selectionEndElement = null;
   static previousSelection = [];
@@ -17,45 +17,48 @@ class TableSelection {
       return;
     }
 
-    TableSelection.isMouseDown = true;
-    // reset cell selection
-    TableSelection.previousSelection = [TableSelection.selectionStartElement, TableSelection.selectionEndElement];
-    TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
     TableSelection.resetSelection();
 
-    const targetCell = TableSelection.getTargetCell(e);
-    if (!targetCell) {
-      // default mouse down event when clicking outside a cell
+    if (e.ctrlKey){
+      TableSelection.isCtrlMouseDown = true;
+      // reset cell selection
+      TableSelection.previousSelection = [TableSelection.selectionStartElement, TableSelection.selectionEndElement];
+      TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
+      
+      const targetCell = TableSelection.getTargetCell(e);
+      if (!targetCell) {
+        // default mouse down event when clicking outside a cell
+        TableSelection.focusedCell = null;
+        return;
+      }
+  
+      if ((!TableSelection.preventMouseDown && targetCell === TableSelection.clickedCellTimeout) || TableSelection.focusedCell === targetCell) {
+        // default mouse down event when multiple click in less than 500ms in the same cell or if the cell is already focused
+        TableSelection.focusedCell = targetCell;
+        return;
+      }
+  
+      // single mouse left click = start selection
+      e.preventDefault();
       TableSelection.focusedCell = null;
-      return;
-    }
-
-    if ((!TableSelection.preventMouseDown && targetCell === TableSelection.clickedCellTimeout) || TableSelection.focusedCell === targetCell) {
-      // default mouse down event when multiple click in less than 500ms in the same cell or if the cell is already focused
-      TableSelection.focusedCell = targetCell;
-      return;
-    }
-
-    // single mouse left click = start selection
-    e.preventDefault();
-    TableSelection.focusedCell = null;
-
-    clearTimeout(TableSelection.dblClickTimeout);
-    TableSelection.dblClickTimeout = setTimeout(() => {
-      TableSelection.preventMouseDown = true;
-      TableSelection.clickedCellTimeout = null;
-    }, 500);
-    TableSelection.preventMouseDown = false;
-
-    TableSelection.selectionStartElement = TableSelection.clickedCellTimeout = targetCell;
-
-    if (TableSelection.selectionStartElement) {
-      TableSelection.selectionStartElement.classList.add('ql-cell-selected');
+  
+      clearTimeout(TableSelection.dblClickTimeout);
+      TableSelection.dblClickTimeout = setTimeout(() => {
+        TableSelection.preventMouseDown = true;
+        TableSelection.clickedCellTimeout = null;
+      }, 500);
+      TableSelection.preventMouseDown = false;
+  
+      TableSelection.selectionStartElement = TableSelection.clickedCellTimeout = targetCell;
+  
+      if (TableSelection.selectionStartElement) {
+        TableSelection.selectionStartElement.classList.add('ql-cell-selected');
+      }
     }
   }
 
   static mouseMove(quill, e) {
-    if (TableSelection.isMouseDown && TableSelection.selectionStartElement) {
+    if (TableSelection.isCtrlMouseDown && TableSelection.selectionStartElement) {
       const previousSelectionEndElement = TableSelection.selectionEndElement;
       TableSelection.selectionEndElement = TableSelection.getTargetCell(e);
       // Update selection if: mouse button is down, selection changed, start and end element exist and are in the same table
@@ -81,7 +84,7 @@ class TableSelection {
   }
 
   static mouseUp(quill, e) {
-    TableSelection.isMouseDown = false;
+    TableSelection.isCtrlMouseDown = false;
     if (!TableSelection.selectionEndElement) {
       TableSelection.selectionEndElement = TableSelection.selectionStartElement;
     }

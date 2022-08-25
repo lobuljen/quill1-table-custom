@@ -3,6 +3,7 @@ import TableModule from './index.js';
 import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 import './css/quill.table.css';
+import Delta from 'quill-delta';
 
 // import '@fortawesome/fontawesome-free/webfonts';
 // import '@fortawesome/fontawesome-free/css/solid.css';
@@ -59,6 +60,35 @@ const quill = new Quill(document.getElementById('quillContainer'), {
     keyboard: {
       // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
       bindings: {
+        tab: {
+          key: 'tab',
+          handler: function (range, keycontext) {
+            let outSideOfTable = TableModule.keyboardHandler(this.quill, 'tab', range, keycontext)
+            if (outSideOfTable){ //for some reason when you return true as quill says it should hand it to the default like the other bindings... for tab it doesnt.
+              this.quill.history.cutoff(); //mimic the exact same thing quill does
+              let delta = new Delta().retain(range.index)
+                                     .delete(range.length)
+                                     .insert('\t');
+              this.quill.updateContents(delta, Quill.sources.USER);
+              this.quill.history.cutoff();
+              this.quill.setSelection(range.index + 1, Quill.sources.SILENT);
+            }
+          }
+        },
+        customShiftTab: {
+          key: 'tab',
+          shiftKey: true,
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'shiftTab', range, keycontext);
+          }
+        },
+        customSelectAll: {
+          key: 'a',
+          ctrlKey: true,
+          handler: function (range, keycontext) {
+            return TableModule.keyboardHandler(this.quill, 'selectAll', range, keycontext);
+          }
+        },
         backspace: {
           key: 'backspace',
           handler: function (range, keycontext) {
