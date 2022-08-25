@@ -219,6 +219,7 @@ export default class TableModule {
     }
 
     if (key === "shiftTab") {
+      //previous cell
       TableSelection.resetSelection();
       const [leaf] = quill.getLeaf(quill.getSelection().index);
       let selectionIndex;
@@ -230,29 +231,22 @@ export default class TableModule {
           while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
             unmergedCell = unmergedCell.previousSibling
           }
-          blot = Quill.find(unmergedCell);
-          selectionIndex = blot.offset(quill.scroll);
+          blot = Quill.find(unmergedCell)
         } else {
           if (leaf.parent.domNode.closest('tr').previousSibling) {//no more cells, go to the next row
             unmergedCell = leaf.parent.domNode.closest('tr').previousSibling.lastChild
             while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
               unmergedCell = unmergedCell.previousSibling
             }
-            blot = Quill.find(unmergedCell);
-            selectionIndex = blot.offset(quill.scroll);
+            blot = Quill.find(unmergedCell)
           } else {
-            if (leaf.parent.domNode.closest('table').previousSibling) {//no more rows to the tables next sibling which will be the next quill run p,h1-h4
-              blot = Quill.find(leaf.parent.domNode.closest('table'));
-              let nextBlot = Quill.find(leaf.parent.domNode.closest('table').previousSibling);
-
-              let blotIndex = blot.offset(quill.scroll);
-              let blotBeforeIndex = nextBlot.offset(quill.scroll);
-
-              selectionIndex = Math.abs(blotIndex - blotBeforeIndex) - 1; //selection index between the last blot and current
+            if (leaf.parent.domNode.closest('table').previousSibling) {//no more rows to the tables prev sibling which will just go to electron default.
+              return true
             }
           }
         }
         //we get the actual editor index when we have the blot aka element in editor
+        selectionIndex = blot.offset(quill.scroll);
         quill.setSelection(selectionIndex, 0)
 
         return false
