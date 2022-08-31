@@ -42,7 +42,7 @@ export default class TableModule {
     };
 
     // selection mouse events
-    quill.container.addEventListener('mousedown', (e) => TableSelection.mouseDown(quill, e));
+    quill.container.addEventListener('mousedown', (e) => TableSelection.mouseDown(quill, e, options.cellSelectionOnClick));
     quill.container.addEventListener('mousemove', (e) => TableSelection.mouseMove(quill, e));
     quill.container.addEventListener('mouseup', (e) => TableSelection.mouseUp(quill, e));
     quill.on('selection-change', (range, oldRange) => TableSelection.selectionChange(quill, range, oldRange));

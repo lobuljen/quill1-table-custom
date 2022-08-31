@@ -75,14 +75,14 @@ const quill = new Quill(document.getElementById('quillContainer'), {
             }
           }
         },
-        customShiftTab: {
+        shiftTab: {
           key: 'tab',
           shiftKey: true,
           handler: function (range, keycontext) {
             return TableModule.keyboardHandler(this.quill, 'shiftTab', range, keycontext);
           }
         },
-        customSelectAll: {
+        selectAll: {
           key: 'a',
           ctrlKey: true,
           handler: function (range, keycontext) {

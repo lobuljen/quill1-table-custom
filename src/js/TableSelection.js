@@ -2,7 +2,7 @@ import TableToolbar from './TableToolbar';
 
 class TableSelection {
   static focusedCell = null;
-  static isCtrlMouseDown = false;
+  static isMouseDown = false;
   static selectionStartElement = null;
   static selectionEndElement = null;
   static previousSelection = [];
@@ -10,8 +10,13 @@ class TableSelection {
   static dblClickTimeout = null;
   static clickedCellTimeout = null;
   static preventMouseDown = true;
+  static cellSelectionOnClick = true
 
-  static mouseDown(quill, e) {
+  static mouseDown(quill, e, inCellSelectionOnClick) {
+    if (inCellSelectionOnClick !== undefined){ //we may have no options set for onClick
+      TableSelection.cellSelectionOnClick = inCellSelectionOnClick;
+    }
+
     if (e.which !== 1) {
       // do nothing with center or right click
       return;
@@ -19,12 +24,13 @@ class TableSelection {
 
     TableSelection.resetSelection();
 
-    if (e.ctrlKey){
-      TableSelection.isCtrlMouseDown = true;
+    if ((!TableSelection.cellSelectionOnClick && e.ctrlKey) || TableSelection.cellSelectionOnClick){
+      TableSelection.isMouseDown = true;
       // reset cell selection
       TableSelection.previousSelection = [TableSelection.selectionStartElement, TableSelection.selectionEndElement];
       TableSelection.selectionStartElement = TableSelection.selectionEndElement = null;
-      
+      TableSelection.resetSelection();
+
       const targetCell = TableSelection.getTargetCell(e);
       if (!targetCell) {
         // default mouse down event when clicking outside a cell
@@ -58,7 +64,7 @@ class TableSelection {
   }
 
   static mouseMove(quill, e) {
-    if (TableSelection.isCtrlMouseDown && TableSelection.selectionStartElement) {
+    if (TableSelection.isMouseDown && TableSelection.selectionStartElement) {
       const previousSelectionEndElement = TableSelection.selectionEndElement;
       TableSelection.selectionEndElement = TableSelection.getTargetCell(e);
       // Update selection if: mouse button is down, selection changed, start and end element exist and are in the same table
@@ -84,7 +90,7 @@ class TableSelection {
   }
 
   static mouseUp(quill, e) {
-    TableSelection.isCtrlMouseDown = false;
+    TableSelection.isMouseDown = false;
     if (!TableSelection.selectionEndElement) {
       TableSelection.selectionEndElement = TableSelection.selectionStartElement;
     }
