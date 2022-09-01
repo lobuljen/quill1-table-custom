@@ -7,7 +7,6 @@ import Delta from 'quill-delta';
 
 // import '@fortawesome/fontawesome-free/webfonts';
 // import '@fortawesome/fontawesome-free/css/solid.css';
-// import "./css/fa.scss";
 
 Quill.register('modules/table', TableModule);
 

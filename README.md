@@ -53,35 +53,42 @@ Quill.register('modules/table', TableModule);
   }
 ]
 
-// add keyboard bindings in Keyboard options
-keyboard: {
-  // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
-  bindings: {
-    backspace: {
-      key: 'backspace',
-      handler: function (range, keycontext) {
-        return TableModule.keyboardHandler(this.quill, 'backspace', range, keycontext);
-      }
-    },
-    delete: {
-      key: 'delete',
-      handler: function (range, keycontext) {
-        return TableModule.keyboardHandler(this.quill, 'delete', range, keycontext);
-      }
-    },
-    undo: {
-      ctrlKey: true,
-      key: 'z',
-      handler: function (range, keycontext) {
-        return TableModule.keyboardHandler(this.quill, 'undo', range, keycontext);
-      }
-    },
-    redo: {
-      ctrlKey: true,
-      shiftKey: true,
-      key: 'z',
-      handler: function (range, keycontext) {
-        return TableModule.keyboardHandler(this.quill, 'redo', range, keycontext);
+// add module in Quill options
+modules: {
+  table: {
+    // table module options
+    cellSelectionOnClick: true // true: cell selection on click, false: cell selection with CTRL key
+  },
+  // add keyboard bindings in Keyboard options
+  keyboard: {
+    // Since Quill’s default handlers are added at initialization, the only way to prevent them is to add yours in the configuration.
+    bindings: {
+      backspace: {
+        key: 'backspace',
+        handler: function (range, keycontext) {
+          return TableModule.keyboardHandler(this.quill, 'backspace', range, keycontext);
+        }
+      },
+      delete: {
+        key: 'delete',
+        handler: function (range, keycontext) {
+          return TableModule.keyboardHandler(this.quill, 'delete', range, keycontext);
+        }
+      },
+      undo: {
+        ctrlKey: true,
+        key: 'z',
+        handler: function (range, keycontext) {
+          return TableModule.keyboardHandler(this.quill, 'undo', range, keycontext);
+        }
+      },
+      redo: {
+        ctrlKey: true,
+        shiftKey: true,
+        key: 'z',
+        handler: function (range, keycontext) {
+          return TableModule.keyboardHandler(this.quill, 'redo', range, keycontext);
+        }
       }
     }
   }
@@ -107,3 +114,6 @@ npm run build
 * remove cell/selection feature
 * copy/paste a table and managed merged cells
 * add col/row before/after
+* Tabbing between cells
+* select all cell content
+* cell selection on click or with CTRL key
