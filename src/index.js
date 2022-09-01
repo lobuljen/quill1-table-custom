@@ -9,7 +9,6 @@ import TableTrick from './js/TableTrick';
 import TableSelection from './js/TableSelection';
 import TableToolbar from './js/TableToolbar';
 import './css/quill.table.css';
-
 let Container = Quill.import('blots/container');
 
 const Parchment = Quill.import('parchment');
@@ -43,7 +42,7 @@ export default class TableModule {
     };
 
     // selection mouse events
-    quill.container.addEventListener('mousedown', (e) => TableSelection.mouseDown(quill, e));
+    quill.container.addEventListener('mousedown', (e) => TableSelection.mouseDown(quill, e, options.cellSelectionOnClick));
     quill.container.addEventListener('mousemove', (e) => TableSelection.mouseMove(quill, e));
     quill.container.addEventListener('mouseup', (e) => TableSelection.mouseUp(quill, e));
     quill.on('selection-change', (range, oldRange) => TableSelection.selectionChange(quill, range, oldRange));
@@ -140,6 +139,7 @@ export default class TableModule {
 
     if (key === 'backspace') {
       // if the selection is at the cell border
+      // BUG: after undo brings back deleted cell when backspace comes in the keycontext offset is 0, which throws it to the end
       if (!keycontext.offset && !range.length) {
         const selection = window.getSelection();
         const nodeList = document.querySelectorAll(".ql-editor p");
@@ -187,6 +187,73 @@ export default class TableModule {
       return true;
     }
 
+    if (key === 'tab') {
+      TableSelection.resetSelection();
+      const [leaf] = quill.getLeaf(quill.getSelection().index);
+      let selectionIndex;
+      let blot;
+      let unmergedCell;
+      if (leaf.parent.domNode.closest('td')) {
+        if (leaf.parent.domNode.closest('td').nextSibling) {
+          unmergedCell = leaf.parent.domNode.closest('td').nextSibling
+          while (unmergedCell && unmergedCell.getAttribute('merge_id')) {
+            unmergedCell = unmergedCell.nextSibling
+          }
+          blot = Quill.find(unmergedCell ? unmergedCell : leaf.parent.domNode.closest('tr').nextSibling) //we truly dont have any more cells
+        } else { //we dont need to find the first child here since quill does the right thing
+          if (leaf.parent.domNode.closest('tr').nextSibling) { //no more cells, go to the next row
+            blot = Quill.find(leaf.parent.domNode.closest('tr').nextSibling)
+          } else { //no more rows to the tables next sibling which will be the next quill run p,h1-h4
+            if (leaf.parent.domNode.closest('table').nextSibling) {
+              blot = Quill.find(leaf.parent.domNode.closest('table').nextSibling)
+            }
+          }
+        }
+        //we get the actual editor index when we have the blot aka element in editor
+        selectionIndex = blot.offset(quill.scroll);
+        quill.setSelection(selectionIndex, 0)
+
+        return false
+      }
+      return true
+    }
+
+    if (key === "shiftTab") {
+      //previous cell
+      TableSelection.resetSelection();
+      const [leaf] = quill.getLeaf(quill.getSelection().index);
+      let selectionIndex;
+      let blot;
+      let unmergedCell;
+      if (leaf.parent.domNode.closest('td')) {
+        if (leaf.parent.domNode.closest('td').previousSibling) {
+          unmergedCell = leaf.parent.domNode.closest('td').previousSibling
+          while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
+            unmergedCell = unmergedCell.previousSibling
+          }
+          blot = Quill.find(unmergedCell)
+        } else {
+          if (leaf.parent.domNode.closest('tr').previousSibling) {//no more cells, go to the next row
+            unmergedCell = leaf.parent.domNode.closest('tr').previousSibling.lastChild
+            while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
+              unmergedCell = unmergedCell.previousSibling
+            }
+            blot = Quill.find(unmergedCell)
+          } else {
+            if (leaf.parent.domNode.closest('table').previousSibling) {//no more rows to the tables prev sibling which will just go to electron default.
+              return true
+            }
+          }
+        }
+        //we get the actual editor index when we have the blot aka element in editor
+        selectionIndex = blot.offset(quill.scroll);
+        quill.setSelection(selectionIndex, 0)
+
+        return false
+      }
+      return true
+    }
+
     let node = quill.selection.getNativeRange().start.node;
     if (!node) return false
     let blot = Parchment.find(node);
@@ -201,6 +268,30 @@ export default class TableModule {
     const [prev] = quill.getLine(range.index - 1);
     const [next] = quill.getLine(range.index + 1);
     // If a cell has multiple rows, you can delete as standard
+
+    if (key === 'selectAll') {
+      let [line] = quill.getLine(quill.getSelection().index);
+      let blot;
+      let nextBlot;
+      if (line.parent.domNode.nodeName === "TD"){
+        if (line.parent.domNode.nextSibling){
+          nextBlot = Quill.find(line.parent.domNode.nextSibling)
+        } else { //no next cell to bounce the end to
+          if (line.parent.domNode.closest('tr').nextSibling){ //no next row either
+            nextBlot = Quill.find(line.parent.domNode.closest('tr').nextSibling)
+          } else { //the only other thing is get tables sibling which is the next p in editor
+            nextBlot = Quill.find(line.parent.domNode.closest('table').nextSibling)
+          }
+        }
+        blot = Quill.find(line.parent.domNode);
+        let selectionIndex = blot.offset(quill.scroll); //index for cell start
+        let nextBlotIndex = nextBlot.offset(quill.scroll); //index for cell ending
+        quill.setSelection(selectionIndex, nextBlotIndex-selectionIndex-1)
+        return false
+      } else {
+        return true
+      }
+    }
     if (key === 'backspace' && prev && prev.next) {
       return true;
     }
