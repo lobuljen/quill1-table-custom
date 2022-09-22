@@ -1,9 +1,9 @@
 import Quill from 'quill';
 
-let Container = Quill.import('blots/container');
-let Block = Quill.import('blots/block');
-let BlockEmbed = Quill.import('blots/block/embed');
-let Parchment = Quill.import('parchment');
+const Container = Quill.import('blots/container');
+const Block = Quill.import('blots/block');
+const BlockEmbed = Quill.import('blots/block/embed');
+const Parchment = Quill.import('parchment');
 
 class ContainBlot extends Container {
   static create(value) {

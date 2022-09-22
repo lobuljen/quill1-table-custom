@@ -3,7 +3,7 @@ import TableCell from './TableCellBlot';
 import ContainBlot from './ContainBlot';
 import TableTrick from './TableTrick';
 
-let Parchment = Quill.import('parchment');
+const Parchment = Quill.import('parchment');
 
 class TableRow extends ContainBlot {
   static create(value) {

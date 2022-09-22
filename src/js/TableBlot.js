@@ -4,7 +4,7 @@ import TableRow from './TableRowBlot';
 import TableHistory from './TableHistory';
 import ContainBlot from './ContainBlot';
 
-let Parchment = Quill.import('parchment');
+const Parchment = Quill.import('parchment');
 
 class Table extends ContainBlot {
   static create(value) {

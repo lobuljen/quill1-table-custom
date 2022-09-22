@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.1] - 2022-09-22
+- Fix "Edge case for delete then undo of cell" <https://github.com/dclement8/quill1-table/issues/3>
+
 ## [1.6.0] - 2022-09-01
 - Update dependencies
 

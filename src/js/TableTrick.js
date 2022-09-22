@@ -2,9 +2,9 @@ import Quill from 'quill';
 import TableHistory from './TableHistory';
 import TableSelection from './TableSelection';
 
-let Parchment = Quill.import('parchment');
-let Container = Quill.import('blots/container');
-let Scroll = Quill.import('blots/scroll');
+const Parchment = Quill.import('parchment');
+const Container = Quill.import('blots/container');
+const Scroll = Quill.import('blots/scroll');
 
 export default class TableTrick {
   static random_id() {

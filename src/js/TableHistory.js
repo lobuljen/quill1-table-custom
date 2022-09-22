@@ -1,4 +1,7 @@
+import Quill from 'quill';
 import TableTrick from './TableTrick';
+
+const Parchment = Quill.import('parchment');
 
 class TableHistory {
   static changes = [];
@@ -121,12 +124,19 @@ class TableHistory {
   }
 
   static insert(change) {
-    let parentNode = change.parentNode || change.nextNode.parentNode;
+    const parentNode = change.parentNode || change.nextNode.parentNode;
     if (parentNode) {
-      if (change.nextNode) {
-        parentNode.insertBefore(change.node, change.nextNode);
-      } else {
-        parentNode.appendChild(change.node);
+      const _parentNode = Parchment.find(parentNode);
+      if (_parentNode) {
+        const _node = Parchment.create(change.node);
+        if (change.nextNode) {
+          const _nextNode = Parchment.find(change.nextNode);
+          if (_nextNode) {
+            _parentNode.insertBefore(_node, _nextNode);
+          }
+        } else {
+          _parentNode.appendChild(_node);
+        }
       }
 
       // force re-rendering cells border (Firefox bug)
