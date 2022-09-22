@@ -31,7 +31,8 @@ All notable changes to this project will be documented in this file.
 - TableHistory.undo and TableHistory.redo need quill instance as first argument (and change id as second argument)
 - TableSelection.mouseDown, TableSelection.mouseMove, TableSelection.mouseUp and TableSelection.selectionChange need quill instance as first argument
 
-[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.0...HEAD
+[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.1...HEAD
+[1.6.1]: https://github.com/dclement8/quill1-table/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/dclement8/quill1-table/compare/1.5.2...1.6.0
 [1.5.2]: https://github.com/dclement8/quill1-table/compare/1.5.1...1.5.2
 [1.5.1]: https://github.com/dclement8/quill1-table/compare/1.5.0...1.5.1
