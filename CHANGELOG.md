@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.3] - 2022-12-14
+- Specify which export should be exposed as a library in webpack config <https://github.com/dclement8/quill1-table/issues/6>
+
 ## [1.6.2] - 2022-11-07
 - Add typescript definition <https://github.com/dclement8/quill1-table/issues/5>
 
@@ -34,7 +37,8 @@ All notable changes to this project will be documented in this file.
 - TableHistory.undo and TableHistory.redo need quill instance as first argument (and change id as second argument)
 - TableSelection.mouseDown, TableSelection.mouseMove, TableSelection.mouseUp and TableSelection.selectionChange need quill instance as first argument
 
-[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.2...HEAD
+[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.3...HEAD
+[1.6.3]: https://github.com/dclement8/quill1-table/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/dclement8/quill1-table/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/dclement8/quill1-table/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/dclement8/quill1-table/compare/1.5.2...1.6.0

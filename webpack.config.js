@@ -6,7 +6,11 @@ module.exports = {
     entry: './src/index.js',
     output: {
         filename: 'quill1-table.js',
-        library: 'quill1Table',
+        library: {
+          name: 'quill1Table',
+          type: 'var',
+          export: 'default'
+        },
         libraryTarget: 'umd',
         path: path.resolve(__dirname, 'dist')
     },
