@@ -1,6 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.6.4] - 2023-01-23
+- Manage th, empty td and td without p <https://github.com/dclement8/quill1-table/issues/7>
+
 ## [1.6.3] - 2022-12-14
 - Specify which export should be exposed as a library in webpack config <https://github.com/dclement8/quill1-table/issues/6>
 
@@ -37,7 +40,8 @@ All notable changes to this project will be documented in this file.
 - TableHistory.undo and TableHistory.redo need quill instance as first argument (and change id as second argument)
 - TableSelection.mouseDown, TableSelection.mouseMove, TableSelection.mouseUp and TableSelection.selectionChange need quill instance as first argument
 
-[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.3...HEAD
+[Unreleased]: https://github.com/dclement8/quill1-table/compare/1.6.4...HEAD
+[1.6.4]: https://github.com/dclement8/quill1-table/compare/1.6.3...1.6.4
 [1.6.3]: https://github.com/dclement8/quill1-table/compare/1.6.2...1.6.3
 [1.6.2]: https://github.com/dclement8/quill1-table/compare/1.6.1...1.6.2
 [1.6.1]: https://github.com/dclement8/quill1-table/compare/1.6.0...1.6.1

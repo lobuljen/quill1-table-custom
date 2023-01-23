@@ -68,7 +68,20 @@ export default class TableModule {
     clipboard.addMatcher('TR', function (node, delta) {
       return delta;
     });
-    clipboard.addMatcher('TD', function (node, delta) {
+    clipboard.addMatcher('TD, TH', function (node, delta) {
+      if (delta.length() === 0) {
+        // fix https://github.com/dclement8/quill1-table/issues/7 (empty td removed)
+        delta.ops = [
+          {insert: '\n'}
+        ];
+      } else if (delta.ops && delta.ops.length) {
+        // fix https://github.com/dclement8/quill1-table/issues/7 (td with no child node)
+        const lastIndex = delta.ops.reduce((lastIndex, op, idx) => typeof op.insert !== 'undefined' ? idx : lastIndex, -1);
+        if (lastIndex >= 0 && !delta.ops[lastIndex].insert.endsWith('\n')) {
+          delta.ops[lastIndex].insert += '\n';
+        }
+      }
+
       const tableNode = node.closest('table');
       if (!node.getAttribute('table_id') && tableNode) {
         if (!tableNode.getAttribute('table_id')) {
@@ -227,21 +240,21 @@ export default class TableModule {
       let unmergedCell;
       if (leaf.parent.domNode.closest('td')) {
         if (leaf.parent.domNode.closest('td').previousSibling) {
-          unmergedCell = leaf.parent.domNode.closest('td').previousSibling
+          unmergedCell = leaf.parent.domNode.closest('td').previousSibling;
           while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
-            unmergedCell = unmergedCell.previousSibling
+            unmergedCell = unmergedCell.previousSibling;
           }
-          blot = Quill.find(unmergedCell)
+          blot = Quill.find(unmergedCell);
         } else {
-          if (leaf.parent.domNode.closest('tr').previousSibling) {//no more cells, go to the next row
-            unmergedCell = leaf.parent.domNode.closest('tr').previousSibling.lastChild
+          if (leaf.parent.domNode.closest('tr').previousSibling) { //no more cells, go to the next row
+            unmergedCell = leaf.parent.domNode.closest('tr').previousSibling.lastChild;
             while (unmergedCell.getAttribute('merge_id')) { //this a merged cell, in dom but styled/css out
-              unmergedCell = unmergedCell.previousSibling
+              unmergedCell = unmergedCell.previousSibling;
             }
-            blot = Quill.find(unmergedCell)
+            blot = Quill.find(unmergedCell);
           } else {
-            if (leaf.parent.domNode.closest('table').previousSibling) {//no more rows to the tables prev sibling which will just go to electron default.
-              return true
+            if (leaf.parent.domNode.closest('table').previousSibling) { //no more rows to the tables prev sibling which will just go to electron default.
+              return true;
             }
           }
         }
@@ -249,13 +262,13 @@ export default class TableModule {
         selectionIndex = blot.offset(quill.scroll);
         quill.setSelection(selectionIndex, 0)
 
-        return false
+        return false;
       }
-      return true
+      return true;
     }
 
     let node = quill.selection.getNativeRange().start.node;
-    if (!node) return false
+    if (!node) return false;
     let blot = Parchment.find(node);
 
     if (
@@ -273,24 +286,23 @@ export default class TableModule {
       let [line] = quill.getLine(quill.getSelection().index);
       let blot;
       let nextBlot;
-      if (line.parent.domNode.nodeName === "TD"){
+      if (line.parent.domNode.nodeName === "TD") {
         if (line.parent.domNode.nextSibling){
-          nextBlot = Quill.find(line.parent.domNode.nextSibling)
+          nextBlot = Quill.find(line.parent.domNode.nextSibling);
         } else { //no next cell to bounce the end to
-          if (line.parent.domNode.closest('tr').nextSibling){ //no next row either
-            nextBlot = Quill.find(line.parent.domNode.closest('tr').nextSibling)
+          if (line.parent.domNode.closest('tr').nextSibling) { //no next row either
+            nextBlot = Quill.find(line.parent.domNode.closest('tr').nextSibling);
           } else { //the only other thing is get tables sibling which is the next p in editor
-            nextBlot = Quill.find(line.parent.domNode.closest('table').nextSibling)
+            nextBlot = Quill.find(line.parent.domNode.closest('table').nextSibling);
           }
         }
         blot = Quill.find(line.parent.domNode);
         let selectionIndex = blot.offset(quill.scroll); //index for cell start
         let nextBlotIndex = nextBlot.offset(quill.scroll); //index for cell ending
-        quill.setSelection(selectionIndex, nextBlotIndex-selectionIndex-1)
-        return false
-      } else {
-        return true
+        quill.setSelection(selectionIndex, nextBlotIndex-selectionIndex-1);
+        return false;
       }
+      return true;
     }
     if (key === 'backspace' && prev && prev.next) {
       return true;
