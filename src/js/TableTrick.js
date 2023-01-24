@@ -434,6 +434,9 @@ export default class TableTrick {
                 let _oldContent = cell.innerHTML;
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: '<p><br></p>' });
+
+                // Remove node after merge
+                _removeCell(cell, false);
               }
 
               if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
@@ -446,10 +449,12 @@ export default class TableTrick {
         }
 
         if (node && mergedNodes.length) {
+          /*
           mergedNodes.forEach(mergedNode => {
             mergedNode.node.setAttribute('merge_id', cell_id);
             mergedNode.node.innerHTML = mergedNode.newContent;
           });
+          */
 
           // set colspan and rowspan attributes
           node.setAttribute('colspan', colSpan);
