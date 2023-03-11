@@ -435,8 +435,9 @@ export default class TableTrick {
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: '<p><br></p>' });
 
+                console.log('Remove node after merge');
                 // Remove node after merge
-                _removeCell(cell, false);
+                TableTrick._removeCell(cell, false);
               }
 
               if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
