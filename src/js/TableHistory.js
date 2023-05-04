@@ -161,8 +161,10 @@ class TableHistory {
     // remove colspan and rowspan attributes
     td.removeAttribute('colspan');
     td.removeAttribute('rowspan');
+    console.log(change);
     // for each merged node, remove merge_id attribute and restore content
     change.mergedNodes.forEach(cell => {
+      console.log(cell);
       cell.node.removeAttribute('merge_id');
       cell.node.innerHTML = cell[revert ? 'oldContent' : 'newContent'];
     });

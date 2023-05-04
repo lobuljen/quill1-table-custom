@@ -403,9 +403,10 @@ export default class TableTrick {
   static mergeSelection(quill) {
     // get selection
     const coords = TableSelection.getSelectionCoords();
+    const table = TableSelection.selectionStartElement.closest('table');
     TableSelection.resetSelection(quill.container);
+
     if (coords) {
-      const table = TableSelection.selectionStartElement.closest('table');
       const colSpan = coords.maxX - coords.minX + 1;
       const rowSpan = coords.maxY - coords.minY + 1;
       if (colSpan > 1 || rowSpan > 1) {
@@ -414,10 +415,12 @@ export default class TableTrick {
         let mergedNodes = [];
         let mergedCellContent = [];
         let cell_id;
+
         // get selected cells
         for (let y = coords.minY; y <= coords.maxY; y++) {
           for (let x = coords.minX; x <= coords.maxX; x++) {
             const cell = table.children[y].children[x];
+
             if (cell) {
               if (cell.textContent !== '') {
                 // merge all contents
@@ -434,10 +437,6 @@ export default class TableTrick {
                 let _oldContent = cell.innerHTML;
                 // update mergedNodes array for history purposes
                 mergedNodes.push({ node: cell, oldContent: _oldContent, newContent: '<p><br></p>' });
-
-                console.log('Remove node after merge');
-                // Remove node after merge
-                TableTrick._removeCell(cell, false);
               }
 
               if (cell.getAttribute('colspan') || cell.getAttribute('rowspan')) {
@@ -450,12 +449,10 @@ export default class TableTrick {
         }
 
         if (node && mergedNodes.length) {
-          /*
+
           mergedNodes.forEach(mergedNode => {
-            mergedNode.node.setAttribute('merge_id', cell_id);
-            mergedNode.node.innerHTML = mergedNode.newContent;
+            TableTrick._removeCell(mergedNode.node, false);
           });
-          */
 
           // set colspan and rowspan attributes
           node.setAttribute('colspan', colSpan);
@@ -589,6 +586,7 @@ export default class TableTrick {
   }
 
   static _split(cell) {
+    let direction = 'after';
     const cell_id = cell.getAttribute('cell_id');
     // get merged nodes and update mergedNodes array for history purposes, remove merge_id attribute
     let mergedNodes = [];
@@ -599,6 +597,69 @@ export default class TableTrick {
 
     const colSpan = Number.parseInt(cell.getAttribute('colspan') || 1);
     const rowSpan = Number.parseInt(cell.getAttribute('rowspan') || 1);
+
+    const table = cell.parentNode.parentNode;
+    let tr = cell.parentNode;
+
+    if(
+      mergedNodes.length == 0
+    ) {
+      const row = cell.parentNode;
+      const index = Array.prototype.indexOf.call(row.rowIndex, cell) + (direction === 'before' ? 0 : 1);
+      // is this the last cell?
+      const last_cell = index === row.children.length;
+      const table_id = table.getAttribute('table_id');
+
+      for(let i = 1; i < colSpan; i++) {
+
+        const row_id = tr.getAttribute('row_id');
+        const cell_id = TableTrick.random_id();
+        const new_td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
+
+        if (!last_cell || index === tr.children.length) {
+          if (typeof tr.children[index] === 'undefined') {
+            tr.appendChild(new_td);
+            TableHistory.register('insert', { node: new_td, parentNode: tr });
+          } else {
+            let td = Parchment.find(tr.children[index]);
+            if (td) {
+              // manage merged cells
+              tr.insertBefore(new_td.domNode, td.domNode);
+              TableHistory.register('insert', { node: new_td.domNode, nextNode: td.domNode });
+            }
+          }
+        }
+      }
+
+      if(rowSpan > 1) {
+        for(let i = 1; i < rowSpan; i++) {
+          let rowNext = tr.nextSibling;
+
+          for(let j = 1; j < (colSpan + 1); j++) {
+              const row_id = rowNext.getAttribute('row_id');
+              const cell_id = TableTrick.random_id();
+              const new_td = Parchment.create('td', [table_id, row_id, cell_id].join('|'));
+
+              if (!last_cell || index === rowNext.children.length) {
+                if (typeof rowNext.children[index] === 'undefined') {
+                  rowNext.appendChild(new_td);
+                  TableHistory.register('insert', { node: new_td, parentNode: rowNext });
+                } else {
+                  let td = Parchment.find(rowNext.children[index]);
+                  if (td) {
+                    // manage merged cells
+                    rowNext.insertBefore(new_td.domNode, td.domNode);
+                    TableHistory.register('insert', { node: new_td.domNode, nextNode: td.domNode });
+                  }
+                }
+              }
+            }
+
+            tr = rowNext;
+          }
+      }
+    }
+
     if (colSpan > 1 || rowSpan > 1) {
       // remove colspan and rowspan attributes
       cell.removeAttribute('colspan');
