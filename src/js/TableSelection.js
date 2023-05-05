@@ -37,26 +37,26 @@ class TableSelection {
         TableSelection.focusedCell = null;
         return;
       }
-  
+
       if ((!TableSelection.preventMouseDown && targetCell === TableSelection.clickedCellTimeout) || TableSelection.focusedCell === targetCell) {
         // default mouse down event when multiple click in less than 500ms in the same cell or if the cell is already focused
         TableSelection.focusedCell = targetCell;
         return;
       }
-  
+
       // single mouse left click = start selection
       e.preventDefault();
       TableSelection.focusedCell = null;
-  
+
       clearTimeout(TableSelection.dblClickTimeout);
       TableSelection.dblClickTimeout = setTimeout(() => {
         TableSelection.preventMouseDown = true;
         TableSelection.clickedCellTimeout = null;
       }, 500);
       TableSelection.preventMouseDown = false;
-  
+
       TableSelection.selectionStartElement = TableSelection.clickedCellTimeout = targetCell;
-  
+
       if (TableSelection.selectionStartElement) {
         TableSelection.selectionStartElement.classList.add('ql-cell-selected');
       }
@@ -191,13 +191,18 @@ class TableSelection {
   static getTargetCell(e) {
     let element = e.target;
     let cell = null;
+
+    if(!element) {
+      return null;
+    }
+
     do {
-      if (['td', 'th'].includes(element.tagName.toLowerCase())) {
+      if (element.tagName && ['td', 'th'].includes(element.tagName.toLowerCase())) {
         cell = element;
         break;
       }
       element = element.parentNode;
-    } while (element && element !== e.currentTarget);
+    } while (element && element.tagName && element !== e.currentTarget);
     return cell;
   }
 
